@@ -113,7 +113,10 @@ action:
             controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController::redirectAction
             defaults:
                 route: sonata_admin_dashboard
+                # make a permanent redirection...
                 permanent: true
+                # ...and keep the original query string parameters
+                keepQueryParams: true
 
     .. code-block:: xml
 
@@ -129,7 +132,10 @@ action:
             <route id="admin" path="/wp-admin">
                 <default key="_controller">Symfony\Bundle\FrameworkBundle\Controller\RedirectController::redirectAction</default>
                 <default key="route">sonata_admin_dashboard</default>
+                <!-- make a permanent redirection... -->
                 <default key="permanent">true</default>
+                <!-- ...and keep the original query string parameters -->
+                <default key="keepQueryParams">true</default>
             </route>
         </routes>
 
@@ -145,10 +151,16 @@ action:
         $routes->add('admin', new Route('/wp-admin', array(
             '_controller' => 'Symfony\Bundle\FrameworkBundle\Controller\RedirectController::redirectAction',
             'route'       => 'sonata_admin_dashboard',
+            // make a permanent redirection...
             'permanent'   => true,
+            // ...and keep the original query string parameters
+            'keepQueryParams' => true,
         )));
 
         return $routes;
+
+.. versionadded:: 4.1
+    The ``keepQueryParams`` option was introduced in Symfony 4.1.
 
 .. caution::
 
@@ -158,6 +170,10 @@ action:
 
 Keeping the Request Method when Redirecting
 -------------------------------------------
+
+.. versionadded:: 4.1
+    The feature to keep the request method when redirecting was introduced in
+    Symfony 4.1.
 
 The redirections performed in the previous examples use the ``301`` and ``302``
 HTTP status codes. For legacy reasons, these HTTP redirections change the method
@@ -173,7 +189,7 @@ The :method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\RedirectController::u
 and :method:`Symfony\\Bundle\\FrameworkBundle\\Controller\\RedirectController::redirectAction`
 methods accept an additional argument called ``keepRequestMethod``. When it's
 set to ``true``, temporary redirects use ``307`` code instead of ``302`` and
-permanent redirects use ``308`` code instead of ``301``::
+permanent redirects use ``308`` code instead of ``301``:
 
 .. configuration-block::
 

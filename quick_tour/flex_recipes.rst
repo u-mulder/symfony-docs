@@ -36,7 +36,7 @@ small, simple and *fast*. And you're in total control of what you add.
 Flex Recipes and Aliases
 ------------------------
 
-So how can we install and configure Twig? Just run one command:
+So how can we install and configure Twig? By running one single command:
 
 .. code-block:: terminal
 
@@ -53,7 +53,7 @@ It's a way for a library to automatically configure itself by adding and modifyi
 files. Thanks to recipes, adding features is seamless and automated: install a package
 and you're done!
 
-You can find a full list of recipes and aliases by going to `https://symfony.sh`_.
+You can find a full list of recipes and aliases by going to `https://flex.symfony.com`_.
 
 What did this recipe do? In addition to automatically enabling the feature in
 ``config/bundles.php``, it added 3 things:
@@ -76,8 +76,10 @@ Thanks to Flex, after one command, you can start using Twig immediately:
 .. code-block:: diff
 
     // src/Controller/DefaultController.php
-    // ...
+    namespace App\Controller;
 
+    use Symfony\Component\Routing\Annotation\Route;
+    - use Symfony\Component\HttpFoundation\Response;
     + use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
     -class DefaultController
@@ -142,7 +144,7 @@ and performance data!
 Oh, and as you install more libraries, you'll get more tools (like a web debug toolbar
 icon that shows database queries).
 
-Using the profiler is easy because it configured *itself* thanks to the recipe.
+You can now directly use the profiler because it configured *itself* thanks to the recipe.
 What else can we install this easily?
 
 Rich API Support
@@ -150,15 +152,26 @@ Rich API Support
 
 Are you building an API? You can already return JSON easily from any controller::
 
-    /**
-     * @Route("/api/hello/{name}")
-     */
-    public function apiExample($name)
+    // src/Controller/DefaultController.php
+    namespace App\Controller;
+
+    use Symfony\Component\Routing\Annotation\Route;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+    class DefaultController extends AbstractController
     {
-        return $this->json([
-            'name' => $name,
-            'symfony' => 'rocks',
-        ]);
+        // ...
+
+        /**
+         * @Route("/api/hello/{name}")
+         */
+        public function apiExample($name)
+        {
+            return $this->json([
+                'name' => $name,
+                'symfony' => 'rocks',
+            ]);
+        }
     }
 
 But for a *truly* rich API, try installing `Api Platform`_:
@@ -176,7 +189,7 @@ rich API for a ``product`` table? Create a ``Product`` entity and give it the
 ``@ApiResource()`` annotation::
 
     // src/Entity/Product.php
-    // ...
+    namespace App\Entity;
 
     use ApiPlatform\Core\Annotation\ApiResource;
     use Doctrine\ORM\Mapping as ORM;
@@ -200,7 +213,7 @@ rich API for a ``product`` table? Create a ``Product`` entity and give it the
         private $name;
 
         /**
-         * @ORM\Column(type="string")
+         * @ORM\Column(type="int")
          */
         private $price;
 
@@ -213,8 +226,6 @@ me? List your routes by running:
 .. code-block:: terminal
 
     $ php bin/console debug:router
-
-.. code-block:: text
 
     ------------------------------ -------- -------------------------------------
      Name                           Method   Path
@@ -247,6 +258,6 @@ and it's the most important yet. I want to show you how Symfony empowers you to 
 build features *without* sacrificing code quality or performance. It's all about
 the service container, and it's Symfony's super power. Read on: about :doc:`/quick_tour/the_architecture`.
 
-.. _`https://symfony.sh`: https://symfony.sh
+.. _`https://flex.symfony.com`: https://flex.symfony.com
 .. _`Api Platform`: https://api-platform.com/
 .. _`Twig`: https://twig.symfony.com/

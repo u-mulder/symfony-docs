@@ -18,6 +18,8 @@ The ``FileType`` represents a file input in your form.
 | Inherited   | - `disabled`_                                                       |
 | options     | - `error_bubbling`_                                                 |
 |             | - `error_mapping`_                                                  |
+|             | - `help`_                                                           |
+|             | - `help_attr`_                                                      |
 |             | - `label`_                                                          |
 |             | - `label_attr`_                                                     |
 |             | - `label_format`_                                                   |
@@ -45,7 +47,7 @@ be used to move the ``attachment`` file to a permanent location::
 
     use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-    public function uploadAction()
+    public function upload()
     {
         // ...
 
@@ -123,6 +125,10 @@ These options inherit from the :doc:`FormType </reference/forms/types/form>`:
 .. include:: /reference/forms/types/options/error_bubbling.rst.inc
 
 .. include:: /reference/forms/types/options/error_mapping.rst.inc
+
+.. include:: /reference/forms/types/options/help.rst.inc
+
+.. include:: /reference/forms/types/options/help_attr.rst.inc
 
 .. include:: /reference/forms/types/options/label.rst.inc
 

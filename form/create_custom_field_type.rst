@@ -115,45 +115,32 @@ But for the sake of this example, suppose that when your field is "expanded"
 always render it in a ``ul`` element. In your form theme template (see above
 link for details), create a ``shipping_widget`` block to handle this:
 
-.. configuration-block::
+.. code-block:: html+twig
 
-    .. code-block:: html+twig
+    {# templates/form/fields.html.twig #}
+    {% block shipping_widget %}
+        {% spaceless %}
+            {% if expanded %}
+                <ul {{ block('widget_container_attributes') }}>
+                {% for child in form if not child.rendered %}
+                    <li>
+                        {{ form_widget(child) }}
+                        {{ form_label(child) }}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                {# let the choice widget render the select tag #}
+                {{ block('choice_widget') }}
+            {% endif %}
+        {% endspaceless %}
+    {% endblock %}
 
-        {# templates/form/fields.html.twig #}
-        {% block shipping_widget %}
-            {% spaceless %}
-                {% if expanded %}
-                    <ul {{ block('widget_container_attributes') }}>
-                    {% for child in form %}
-                        <li>
-                            {{ form_widget(child) }}
-                            {{ form_label(child) }}
-                        </li>
-                    {% endfor %}
-                    </ul>
-                {% else %}
-                    {# just let the choice widget render the select tag #}
-                    {{ block('choice_widget') }}
-                {% endif %}
-            {% endspaceless %}
-        {% endblock %}
+.. note::
 
-    .. code-block:: html+php
-
-        <!-- src/Resources/shipping_widget.html.php -->
-        <?php if ($expanded) : ?>
-            <ul <?php $view['form']->block($form, 'widget_container_attributes') ?>>
-            <?php foreach ($form as $child) : ?>
-                <li>
-                    <?php echo $view['form']->widget($child) ?>
-                    <?php echo $view['form']->label($child) ?>
-                </li>
-            <?php endforeach ?>
-            </ul>
-        <?php else : ?>
-            <!-- just let the choice widget render the select tag -->
-            <?php echo $view['form']->renderBlock('choice_widget') ?>
-        <?php endif ?>
+    Symfony 4.2 deprecated calling ``FormRenderer::searchAndRenderBlock`` for
+    fields that have already been rendered. That's why the previous example
+    includes the ``... if not child.rendered`` statement.
 
 .. tip::
 
@@ -255,7 +242,7 @@ link for details), create a ``shipping_widget`` block to handle this:
 Using the Field Type
 --------------------
 
-You can now use your custom field type immediately, simply by creating a
+You can now use your custom field type immediately, by creating a
 new instance of the type in one of your forms::
 
     // src/Form/Type/OrderType.php
@@ -296,14 +283,14 @@ add a ``__construct()`` method like normal::
 
     class ShippingType extends AbstractType
     {
-        private $em;
+        private $entityManager;
 
-        public function __construct(EntityManagerInterface $em)
+        public function __construct(EntityManagerInterface $entityManager)
         {
-            $this->em = $em;
+            $this->entityManager = $entityManager;
         }
 
-        // use $this->em down anywhere you want ...
+        // use $this->entityManager down anywhere you want ...
     }
 
 If you're using the default ``services.yaml`` configuration (i.e. services from the

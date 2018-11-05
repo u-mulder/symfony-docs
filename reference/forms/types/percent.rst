@@ -5,7 +5,7 @@ PercentType Field
 =================
 
 The ``PercentType`` renders an input text field and specializes in handling
-percentage data. If your percentage data is stored as a decimal (e.g. ``.95``),
+percentage data. If your percentage data is stored as a decimal (e.g. ``0.95``),
 you can use this field out-of-the-box. If you store your data as a number
 (e.g. ``95``), you should set the ``type`` option to ``integer``.
 
@@ -25,6 +25,8 @@ This field adds a percentage sign "``%``" after the input box.
 |             | - `empty_data`_                                                       |
 |             | - `error_bubbling`_                                                   |
 |             | - `error_mapping`_                                                    |
+|             | - `help`_                                                             |
+|             | - `help_attr`_                                                        |
 |             | - `invalid_message`_                                                  |
 |             | - `invalid_message_parameters`_                                       |
 |             | - `label`_                                                            |
@@ -55,14 +57,14 @@ type
 **type**: ``string`` **default**: ``fractional``
 
 This controls how your data is stored on your object. For example, a percentage
-corresponding to "55%", might be stored as ``.55`` or ``55`` on your
+corresponding to "55%", might be stored as ``0.55`` or ``55`` on your
 object. The two "types" handle these two cases:
 
 *   ``fractional``
-    If your data is stored as a decimal (e.g. ``.55``), use this type.
+    If your data is stored as a decimal (e.g. ``0.55``), use this type.
     The data will be multiplied by ``100`` before being shown to the
     user (e.g. ``55``). The submitted data will be divided by ``100``
-    on form submit so that the decimal value is stored (``.55``);
+    on form submit so that the decimal value is stored (``0.55``);
 
 *   ``integer``
     If your data is stored as an integer (e.g. 55), then use this option.
@@ -94,6 +96,10 @@ The default value is ``''`` (the empty string).
 .. include:: /reference/forms/types/options/error_bubbling.rst.inc
 
 .. include:: /reference/forms/types/options/error_mapping.rst.inc
+
+.. include:: /reference/forms/types/options/help.rst.inc
+
+.. include:: /reference/forms/types/options/help_attr.rst.inc
 
 .. include:: /reference/forms/types/options/invalid_message.rst.inc
 

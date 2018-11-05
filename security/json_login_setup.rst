@@ -1,7 +1,7 @@
 How to Build a JSON Authentication Endpoint
 ===========================================
 
-In this entry, you'll build a JSON endpoint to log in your users. Of course, when the
+In this entry, you'll build a JSON endpoint to log in your users. When the
 user logs in, you can load your users from anywhere - like the database.
 See :ref:`security-user-providers` for details.
 
@@ -55,12 +55,10 @@ First, enable the JSON login under your firewall:
 
 .. tip::
 
-    The ``check_path`` can also be a route name (but cannot have mandatory wildcards - e.g.
-    ``/login/{foo}`` where ``foo`` has no default value).
+    The ``check_path`` can also be a route name (but cannot have mandatory
+    wildcards - e.g. ``/login/{foo}`` where ``foo`` has no default value).
 
-Now, when a request is made to the ``/login`` URL, the security system initiates
-the authentication process. You just need to configure a route matching this
-path:
+The next step is to configure a route in your app matching this path:
 
 .. configuration-block::
 
@@ -69,17 +67,23 @@ path:
         // src/Controller/SecurityController.php
 
         // ...
-        use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+        use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
         use Symfony\Component\HttpFoundation\Request;
         use Symfony\Component\Routing\Annotation\Route;
 
-        class SecurityController extends Controller
+        class SecurityController extends AbstractController
         {
             /**
              * @Route("/login", name="login")
              */
             public function login(Request $request)
             {
+                $user = $this->getUser();
+
+                return $this->json(array(
+                    'username' => $user->getUsername(),
+                    'roles' => $user->getRoles(),
+                ));
             }
         }
 
@@ -110,18 +114,16 @@ path:
         use Symfony\Component\Routing\RouteCollection;
         use Symfony\Component\Routing\Route;
 
-        $collection = new RouteCollection();
-        $collection->add('login', new Route('/login', array(
+        $routes = new RouteCollection();
+        $routes->add('login', new Route('/login', array(
             '_controller' => 'App\Controller\SecurityController::login',
         )));
 
-        return $collection;
+        return $routes;
 
-Don't let this empty controller confuse you. When you submit a ``POST`` request
+Now, when you make a ``POST`` request, with the header ``Content-Type: application/json``,
 to the ``/login`` URL with the following JSON document as the body, the security
-system intercepts the requests. It takes care of authenticating the user with
-the submitted username and password or triggers an error in case the authentication
-process fails:
+system intercepts the request and initiates the authentication process:
 
 .. code-block:: json
 
@@ -129,6 +131,10 @@ process fails:
         "username": "dunglas",
         "password": "MyPassword"
     }
+
+Symfony takes care of authenticating the user with the submitted username and
+password or triggers an error in case the authentication process fails. If the
+authentication is successful, the controller defined earlier will be executed.
 
 If the JSON document has a different structure, you can specify the path to
 access the ``username`` and ``password`` properties using the ``username_path``

@@ -8,7 +8,7 @@ Symfony provides different means to work with an LDAP server.
 
 The Security component offers:
 
-* The ``ldap`` user provider, using the
+* The ``ldap`` :doc:`user provider</security/user_provider>`, using the
   :class:`Symfony\\Component\\Security\\Core\\User\\LdapUserProvider`
   class. Like all other user providers, it can be used with any
   authentication provider.
@@ -34,6 +34,16 @@ This means that the following scenarios will work:
 * Loading user information from an LDAP server, while using another
   authentication strategy (token-based pre-authentication, for example).
 
+Installation
+------------
+
+In applications using :doc:`Symfony Flex </setup/flex>`, run this command to
+install the Ldap component before using it:
+
+.. code-block:: terminal
+
+    $ composer require symfony/ldap
+
 Ldap Configuration Reference
 ----------------------------
 
@@ -49,7 +59,7 @@ The providers are configured to use a default service named ``ldap``,
 but you can override this setting in the security component's
 configuration.
 
-An LDAP client can be simply configured using the built-in
+An LDAP client can be configured using the built-in
 `LDAP PHP extension`_ with the following service definition:
 
 .. configuration-block::
@@ -192,6 +202,15 @@ use the ``ldap`` user provider.
     any escaping yet. Thus, it's your responsibility to prevent LDAP injection
     attacks when using the component directly.
 
+.. caution::
+
+    The user configured above in the user provider is only used to retrieve
+    data. It's a static user defined by its username and password (for improved
+    security, define the password as an environment variable).
+
+    If your LDAP server allows to retrieve information anonymously, you can
+    set the ``search_dn`` and ``search_password`` options to ``null``.
+
 The ``ldap`` user provider supports many different configuration options:
 
 service
@@ -199,7 +218,7 @@ service
 
 **type**: ``string`` **default**: ``ldap``
 
-This is the name of your configured LDAP client. You can freely chose the
+This is the name of your configured LDAP client. You can freely choose the
 name, but it must be unique in your application and it cannot start with a
 number or contain white spaces.
 
@@ -238,19 +257,22 @@ and will not be considered as authenticated fully.
 uid_key
 .......
 
-**type**: ``string`` **default**: ``sAMAccountName``
+**type**: ``string`` **default**: ``null``
 
 This is the entry's key to use as its UID. Depends on your LDAP server
 implementation. Commonly used values are:
 
-* ``sAMAccountName``
+* ``sAMAccountName`` (default)
 * ``userPrincipalName``
 * ``uid``
+
+If you pass ``null`` as the value of this option, the default UID key is used
+``sAMAccountName``.
 
 filter
 ......
 
-**type**: ``string`` **default**: ``({uid_key}={username})``
+**type**: ``string`` **default**: ``null``
 
 This key lets you configure which LDAP query will be used. The ``{uid_key}``
 string will be replaced by the value of the ``uid_key`` configuration value
@@ -260,7 +282,10 @@ replaced by the username you are trying to load.
 For example, with a ``uid_key`` of ``uid``, and if you are trying to
 load the user ``fabpot``, the final string will be: ``(uid=fabpot)``.
 
-Of course, the username will be escaped, in order to prevent `LDAP injection`_.
+If you pass ``null`` as the value of this option, the default filter is used
+``({uid_key}={username})``.
+
+The username will be escaped, in order to prevent `LDAP injection`_.
 
 The syntax for the ``filter`` key is defined by `RFC4515`_.
 
@@ -278,7 +303,7 @@ service
 
 **type**: ``string`` **default**: ``ldap``
 
-This is the name of your configured LDAP client. You can freely chose the
+This is the name of your configured LDAP client. You can freely choose the
 name, but it must be unique in your application and it cannot start with a
 number or contain white spaces.
 

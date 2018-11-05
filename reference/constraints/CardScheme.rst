@@ -96,6 +96,8 @@ on an object that will contain a credit card number.
             }
         }
 
+.. include:: /reference/constraints/_empty-values-are-valid.rst.inc
+
 Available Options
 -----------------
 
@@ -128,6 +130,14 @@ message
 **type**: ``string`` **default**: ``Unsupported card type or invalid card number.``
 
 The message shown when the value does not pass the ``CardScheme`` check.
+
+You can use the following parameters in this message:
+
++------------------+------------------------------------------------+
+| Parameter        | Description                                    |
++==================+================================================+
+| ``{{ value }}``  | The current (invalid) value                    |
++------------------+------------------------------------------------+
 
 .. include:: /reference/constraints/_payload-option.rst.inc
 

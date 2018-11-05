@@ -14,8 +14,8 @@ is easy and natural with the Form component.
 Embedding a Single Object
 -------------------------
 
-Suppose that each ``Task`` belongs to a simple ``Category`` object. Start,
-of course, by creating the ``Category`` object::
+Suppose that each ``Task`` belongs to a simple ``Category`` object. Start by
+creating the ``Category`` object::
 
     // src/Entity/Category.php
     namespace App\Entity;
@@ -109,29 +109,16 @@ the ``TaskType`` class.
 
 Render the ``Category`` fields in the same way as the original ``Task`` fields:
 
-.. configuration-block::
+.. code-block:: html+twig
 
-    .. code-block:: html+twig
+    {# ... #}
 
-        {# ... #}
+    <h3>Category</h3>
+    <div class="category">
+        {{ form_row(form.category.name) }}
+    </div>
 
-        <h3>Category</h3>
-        <div class="category">
-            {{ form_row(form.category.name) }}
-        </div>
-
-        {# ... #}
-
-    .. code-block:: html+php
-
-        <!-- ... -->
-
-        <h3>Category</h3>
-        <div class="category">
-            <?php echo $view['form']->row($form['category']['name']) ?>
-        </div>
-
-        <!-- ... -->
+    {# ... #}
 
 When the user submits the form, the submitted data for the ``Category`` fields
 are used to construct an instance of ``Category``, which is then set on the

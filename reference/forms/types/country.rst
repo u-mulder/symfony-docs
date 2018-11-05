@@ -21,6 +21,8 @@ the option manually, but then you should just use the ``ChoiceType`` directly.
 +-------------+-----------------------------------------------------------------------+
 | Rendered as | can be various tags (see :ref:`forms-reference-choice-tags`)          |
 +-------------+-----------------------------------------------------------------------+
+| Options     | - `choice_translation_locale`_                                        |
++-------------+-----------------------------------------------------------------------+
 | Overridden  | - `choices`_                                                          |
 | options     |                                                                       |
 +-------------+-----------------------------------------------------------------------+
@@ -32,12 +34,15 @@ the option manually, but then you should just use the ``ChoiceType`` directly.
 |             | - `multiple`_                                                         |
 |             | - `placeholder`_                                                      |
 |             | - `preferred_choices`_                                                |
+|             | - `trim`_                                                             |
 |             |                                                                       |
 |             | from the :doc:`FormType </reference/forms/types/form>`                |
 |             |                                                                       |
 |             | - `data`_                                                             |
 |             | - `disabled`_                                                         |
 |             | - `empty_data`_                                                       |
+|             | - `help`_                                                             |
+|             | - `help_attr`_                                                        |
 |             | - `label`_                                                            |
 |             | - `label_attr`_                                                       |
 |             | - `label_format`_                                                     |
@@ -48,6 +53,11 @@ the option manually, but then you should just use the ``ChoiceType`` directly.
 +-------------+-----------------------------------------------------------------------+
 | Class       | :class:`Symfony\\Component\\Form\\Extension\\Core\\Type\\CountryType` |
 +-------------+-----------------------------------------------------------------------+
+
+Field Options
+-------------
+
+.. include:: /reference/forms/types/options/choice_translation_locale.rst.inc
 
 Overridden Options
 ------------------
@@ -82,6 +92,8 @@ These options inherit from the :doc:`ChoiceType </reference/forms/types/choice>`
 
 .. include:: /reference/forms/types/options/preferred_choices.rst.inc
 
+.. include:: /reference/forms/types/options/choice_type_trim.rst.inc
+
 These options inherit from the :doc:`FormType </reference/forms/types/form>`:
 
 .. include:: /reference/forms/types/options/data.rst.inc
@@ -99,6 +111,10 @@ The actual default value of this option depends on other field options:
 
 .. include:: /reference/forms/types/options/empty_data.rst.inc
     :start-after: DEFAULT_PLACEHOLDER
+
+.. include:: /reference/forms/types/options/help.rst.inc
+
+.. include:: /reference/forms/types/options/help_attr.rst.inc
 
 .. include:: /reference/forms/types/options/label.rst.inc
 

@@ -9,7 +9,7 @@ most cases you'll use templates to render HTML content, a template can just
 as easily generate JavaScript, CSS, XML or any other format you can dream of.
 
 For example, the same "resource" is often rendered in several formats.
-To render an article index page in XML, simply include the format in the
+To render an article index page in XML, include the format in the
 template name:
 
 * *XML template name*: ``article/show.xml.twig``
@@ -25,7 +25,7 @@ pattern is to do the following::
     // ...
     use Symfony\Component\Routing\Annotation\Route;
 
-    class ArticleController extends Controller
+    class ArticleController extends AbstractController
     {
         /**
          * @Route("/{slug}")
@@ -61,24 +61,11 @@ special ``_format`` placeholder in your route definition::
 Now, include the ``_format`` placeholder when generating a route for another
 format:
 
-.. configuration-block::
+.. code-block:: html+twig
 
-    .. code-block:: html+twig
-
-        <a href="{{ path('article_show', {'slug': 'about-us', '_format': 'xml'}) }}">
-            View as XML
-        </a>
-
-    .. code-block:: html+php
-
-        <!-- The path() method was introduced in Symfony 2.8. Prior to 2.8, you
-             had to use generate(). -->
-        <a href="<?php echo $view['router']->path('article_show', array(
-            'slug' => 'about-us',
-            '_format' => 'xml',
-        )) ?>">
-            View as XML
-        </a>
+    <a href="{{ path('article_show', {'slug': 'about-us', '_format': 'xml'}) }}">
+        View as XML
+    </a>
 
 .. seealso::
 

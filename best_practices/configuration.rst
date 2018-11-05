@@ -17,9 +17,9 @@ application behavior.
 
 .. best-practice::
 
-    Define the infrastructure-related configuration options as environment
-    variables. During development, use the ``.env`` file at the root of your
-    project to set these.
+    Define the infrastructure-related configuration options as
+    :doc:`environment variables </configuration/external_parameters>`. During
+    development, use the ``.env`` file at the root of your project to set these.
 
 By default, Symfony adds these types of options to the ``.env`` file when
 installing new dependencies in the app:
@@ -183,4 +183,4 @@ just one or two words to describe the purpose of the parameter:
 Next: :doc:`/best_practices/business-logic`
 
 .. _`feature toggles`: https://en.wikipedia.org/wiki/Feature_toggle
-.. _`constant() function`: http://twig.sensiolabs.org/doc/functions/constant.html
+.. _`constant() function`: https://twig.symfony.com/doc/2.x/functions/constant.html

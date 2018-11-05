@@ -41,6 +41,7 @@ Tag Name                                  Usage
 `translation.dumper`_                     Register a custom service that dumps translation messages
 `twig.extension`_                         Register a custom Twig Extension
 `twig.loader`_                            Register a custom service that loads Twig templates
+`twig.runtime`_                           Register a lazy-loaded Twig Extension
 `validator.constraint_validator`_         Create your own custom validation constraint
 `validator.initializer`_                  Register a service that initializes objects before validation
 ========================================  ========================================================================
@@ -710,7 +711,7 @@ If your custom authentication factory extends
 :class:`Symfony\\Bundle\\SecurityBundle\\DependencyInjection\\Security\\Factory\\AbstractFactory`
 and your custom authentication listener extends
 :class:`Symfony\\Component\\Security\\Http\\Firewall\\AbstractAuthenticationListener`,
-then your custom authentication listener will automatically have this tagged
+then your custom authentication listener will automatically have this tag
 applied and it will function automatically.
 
 security.voter
@@ -1098,7 +1099,7 @@ also have to be added as regular services:
     .. code-block:: yaml
 
         services:
-            Twig_Extensions_Extension_Intl:
+            Twig\Extensions\IntlExtension:
                 tags: [twig.extension]
 
     .. code-block:: xml
@@ -1110,7 +1111,7 @@ also have to be added as regular services:
                 http://symfony.com/schema/dic/services/services-1.0.xsd">
 
             <services>
-                <service id="Twig_Extensions_Extension_Intl">
+                <service id="Twig\Extensions\IntlExtension">
                     <tag name="twig.extension" />
                 </service>
             </services>
@@ -1119,7 +1120,7 @@ also have to be added as regular services:
     .. code-block:: php
 
         $container
-            ->register('Twig_Extensions_Extension_Intl')
+            ->register('Twig\Extensions\IntlExtension')
             ->addTag('twig.extension')
         ;
 
@@ -1175,6 +1176,51 @@ also register it manually:
     The ``priority`` value is optional and defaults to ``0``.
     The higher priority loaders are tried first.
 
+.. _reference-dic-tags-twig-runtime:
+
+twig.runtime
+------------
+
+**Purpose**: To register a custom Lazy-Loaded Twig Extension
+
+:ref:`Lazy-Loaded Twig Extensions <lazy-loaded-twig-extensions>` are defined as
+regular services but the need to be tagged with ``twig.runtime``. If you're using the
+:ref:`default services.yaml configuration <service-container-services-load-example>`,
+the service is auto-registered and auto-tagged. But, you can also register it manually:
+
+.. configuration-block::
+
+    .. code-block:: yaml
+
+        services:
+            App\Twig\AppExtension:
+                tags: [twig.runtime]
+
+    .. code-block:: xml
+
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+            <services>
+                <service id="App\Twig\AppExtension">
+                    <tag name="twig.runtime" />
+                </service>
+            </services>
+        </container>
+
+    .. code-block:: php
+
+        use App\Twig\AppExtension;
+        use App\Twig\AnotherExtension;
+
+        $container
+            ->register(AppExtension::class)
+            ->addTag('twig.runtime')
+        ;
+
 validator.constraint_validator
 ------------------------------
 
@@ -1202,8 +1248,8 @@ Then, tag it with the ``validator.initializer`` tag (it has no options).
 For an example, see the ``DoctrineInitializer`` class inside the Doctrine
 Bridge.
 
-.. _`Twig's documentation`: http://twig.sensiolabs.org/doc/advanced.html#creating-an-extension
+.. _`Twig's documentation`: https://twig.symfony.com/doc/2.x/advanced.html#creating-an-extension
 .. _`Twig official extension repository`: https://github.com/fabpot/Twig-extensions
 .. _`KernelEvents`: https://github.com/symfony/symfony/blob/master/src/Symfony/Component/HttpKernel/KernelEvents.php
 .. _`SwiftMailer's Plugin Documentation`: http://swiftmailer.org/docs/plugins.html
-.. _`Twig Loader`: http://twig.sensiolabs.org/doc/api.html#loaders
+.. _`Twig Loader`: https://twig.symfony.com/doc/2.x/api.html#loaders

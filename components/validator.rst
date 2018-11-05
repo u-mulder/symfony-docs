@@ -22,6 +22,12 @@ Alternatively, you can clone the `<https://github.com/symfony/validator>`_ repos
 Usage
 -----
 
+.. seealso::
+
+    This article explains how to use the Validator features as an independent
+    component in any PHP application. Read the :doc:`/validation` article to
+    learn about how to validate data and entities in Symfony applications.
+
 The Validator component behavior is based on two concepts:
 
 * Constraints, which define the rules to be validated;
@@ -47,7 +53,19 @@ characters long::
         }
     }
 
-The validator returns the list of violations.
+The  ``validate()`` method returns the list of violations as an object that
+implements :class:`Symfony\\Component\\Validator\\ConstraintViolationListInterface`.
+If you have lots of validation errors, you can filter them by error code::
+
+    use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
+    $violations = $validator->validate(...);
+    if (0 !== count($violations->findByCodes(UniqueEntity::NOT_UNIQUE_ERROR))) {
+        // handle this specific error (display some message, send an email, etc.)
+    }
+
+.. versionadded:: 3.3
+    The ``findByCodes()`` method was introduced in Symfony 3.3.
 
 Retrieving a Validator Instance
 -------------------------------

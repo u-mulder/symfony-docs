@@ -88,6 +88,8 @@ Basic Usage
             }
         }
 
+.. include:: /reference/constraints/_empty-values-are-valid.rst.inc
+
 Options
 -------
 
@@ -127,18 +129,37 @@ message
 
 This message is shown if the underlying data is not a valid email address.
 
+You can use the following parameters in this message:
+
++------------------+------------------------------------------------+
+| Parameter        | Description                                    |
++==================+================================================+
+| ``{{ value }}``  | The current (invalid) value                    |
++------------------+------------------------------------------------+
+
 checkMX
 ~~~~~~~
 
 **type**: ``boolean`` **default**: ``false``
 
+.. versionadded:: 4.2
+    This option was deprecated in Symfony 4.2.
+
 If true, then the :phpfunction:`checkdnsrr` PHP function will be used to
 check the validity of the MX record of the host of the given email.
+
+.. caution::
+
+    This option is not reliable because it depends on the network conditions
+    and some valid servers refuse to respond to those requests.
 
 checkHost
 ~~~~~~~~~
 
 **type**: ``boolean`` **default**: ``false``
+
+.. versionadded:: 4.2
+    This option was deprecated in Symfony 4.2.
 
 If true, then the :phpfunction:`checkdnsrr` PHP function will be used to
 check the validity of the MX *or* the A *or* the AAAA record of the host

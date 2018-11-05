@@ -27,9 +27,18 @@ third, and forth parameters::
         // until the database table is truncated or its rows are otherwise deleted)
         $defaultLifetime = 0,
 
-        // an array of options for configuring the database connection
+        // an array of options for configuring the database table and connection
         $options = array()
     );
+
+.. versionadded:: 4.2
+    Automatic table creation was introduced in Symfony 4.2.
+
+The table where values are stored is created automatically on the first call to
+the :method:`Symfony\\Component\\Cache\\Adapter\\PdoAdapter::save` method.
+You can also create this table explicitly by calling the
+:method:`Symfony\\Component\\Cache\\Adapter\\PdoAdapter::createTable` method in
+your code.
 
 .. tip::
 

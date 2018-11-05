@@ -19,6 +19,13 @@ Alternatively, you can clone the `<https://github.com/symfony/translation>`_ rep
 
 .. include:: /components/require_autoload.rst.inc
 
+.. seealso::
+
+    This article explains how to use the Translation features as an independent
+    component in any PHP application. Read the :doc:`/translation` article to
+    learn about how to internationalize and manage the user locale in Symfony
+    applications.
+
 Constructing the Translator
 ---------------------------
 
@@ -131,7 +138,7 @@ file as the second argument, instead of an array::
 The Translation Process
 -----------------------
 
-To actually translate the message, the Translator uses a simple process:
+To actually translate the message, the Translator uses the following process:
 
 * A catalog of translated messages is loaded from translation resources defined
   for the ``locale`` (e.g. ``fr_FR``). Messages from the
@@ -155,15 +162,23 @@ Fallback Locales
 
 If the message is not located in the catalog of the specific locale, the
 translator will look into the catalog of one or more fallback locales. For
-example, assume you're trying to translate into the ``fr_FR`` locale:
+example, assume you're trying to translate into the ``es_AR`` locale:
 
-#. First, the translator looks for the translation in the ``fr_FR`` locale;
+#. First, the translator looks for the translation in the ``es_AR``
+   (Argentinean Spanish) locale;
 
-#. If it wasn't found, the translator looks for the translation in the ``fr``
-   locale;
+#. If it wasn't found, the translator looks for the translation in the parent
+   locale, which is automatically defined only for some locales. In this
+   example, the parent locale is ``es_419`` (Latin American Spanish);
+
+#. If it wasn't found, the translator looks for the translation in the ``es``
+   (Spanish) locale;
 
 #. If the translation still isn't found, the translator uses the one or more
    fallback locales set explicitly on the translator.
+
+.. versionadded:: 4.2
+    The use of parent locales was introduced in Symfony 4.2.
 
 For (3), the fallback locales can be set by calling
 :method:`Symfony\\Component\\Translation\\Translator::setFallbackLocales`::

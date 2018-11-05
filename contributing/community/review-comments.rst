@@ -26,7 +26,7 @@ constructive, respectful and helpful reviews and replies.
     your ideas and opinions but helping you to better communicate,
     prevent possible confusion, and keeping the Symfony community a
     welcoming place for everyone. **You are free to disagree with
-    someone's opinions, just don't be disrespectful.**
+    someone's opinions, but don't be disrespectful.**
 
 First of, accept that many programming decisions are opinions.
 Discuss trade offs, which you prefer, and reach a resolution quickly.
@@ -43,16 +43,18 @@ that, but swearing/cursing and name calling doesn't really encourage anyone to
 help you. Take a deep breath, count to 10 and try to *clearly* explain what problems
 you encounter.
 
-Gender-neutral Pronouns
------------------------
+Inclusive Language
+------------------
 
-While not "formally" required, it's better to use gender-neutral pronouns.
-Unless someone "indicated" their pronouns, use "they", "them" instead of
-"he", "she", "his", "hers", "his/hers", "he/she", etc.
+In an effort to be inclusive to a wide group of people, it's recommended to
+use personal pronouns that don't suggest a particular gender. Unless someone
+has stated their pronouns, use "they", "them" instead of "he", "she", "his",
+"hers", "his/hers", "he/she", etc.
 
-Try to avoid using wording that may be considered excluding and needlessly gendered,
-like for example words that have a male base. For example we recommend to use other
-words like "folks", "team", "everyone" in place of "guys".
+Try to avoid using wording that may be considered excluding, needlessly gendered
+(e.g. words that have a male or female base), racially motivated or singles out
+a particular group in society. For example, it's recommended to use words like
+"folks", "team", "everyone" instead of "guys", "ladies", "yanks", etc.
 
 Giving Positive Feedback
 ------------------------
@@ -166,8 +168,8 @@ Final Words
 -----------
 
 Don't feel bad if you "failed" to follow these tips. As long as your
-intentions were good and you didn't really offended or insult anyone;
-you can explain you misunderstood, you didn't meant to marginalize or
+intentions were good and you didn't really offend or insult anyone;
+you can explain you misunderstood, you didn't mean to marginalize or
 simply failed.
 
 But don't say it "just because", if your apology is not really meant

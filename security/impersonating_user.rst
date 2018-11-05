@@ -5,18 +5,16 @@ How to Impersonate a User
 =========================
 
 Sometimes, it's useful to be able to switch from one user to another without
-having to log out and log in again (for instance when you are debugging or trying
-to understand a bug a user sees that you can't reproduce).
+having to log out and log in again (for instance when you are debugging something
+a user sees that you can't reproduce).
 
 .. caution::
 
-    User impersonation is not compatible with
-    :doc:`pre authenticated firewalls </security/pre_authenticated>`. The
-    reason is that impersonation requires the authentication state to be maintained
-    server-side, but pre-authenticated information (``SSL_CLIENT_S_DN_Email``,
-    ``REMOTE_USER`` or other) is sent in each request.
+    User impersonation is not compatible with some authentication mechanisms
+    (e.g. ``REMOTE_USER``) where the authentication information is expected to be
+    sent on each request.
 
-Impersonating the user can be easily done by activating the ``switch_user``
+Impersonating the user can be done by activating the ``switch_user``
 firewall listener:
 
 .. configuration-block::
@@ -66,8 +64,9 @@ firewall listener:
             ),
         ));
 
-To switch to another user, just add a query string with the ``_switch_user``
-parameter and the username as the value to the current URL:
+To switch to another user, add a query string with the ``_switch_user``
+parameter and the username (or whatever field our user provider uses to load users)
+as the value to the current URL:
 
 .. code-block:: text
 
@@ -79,64 +78,65 @@ To switch back to the original user, use the special ``_exit`` username:
 
     http://example.com/somewhere?_switch_user=_exit
 
+This feature is only available to users with a special role called ``ROLE_ALLOWED_TO_SWITCH``.
+Using :ref:`role_hierarchy <security-role-hierarchy>` is a great way to give this
+role to the users that need it.
+
+Knowing When Impersonation Is Active
+------------------------------------
+
 During impersonation, the user is provided with a special role called
 ``ROLE_PREVIOUS_ADMIN``. In a template, for instance, this role can be used
 to show a link to exit impersonation:
 
-.. configuration-block::
+.. code-block:: html+twig
 
-    .. code-block:: html+twig
+    {% if is_granted('ROLE_PREVIOUS_ADMIN') %}
+        <a href="{{ path('homepage', {'_switch_user': '_exit'}) }}">Exit impersonation</a>
+    {% endif %}
 
-        {% if is_granted('ROLE_PREVIOUS_ADMIN') %}
-            <a href="{{ path('homepage', {'_switch_user': '_exit'}) }}">Exit impersonation</a>
-        {% endif %}
+Finding the Original User
+-------------------------
 
-    .. code-block:: html+php
-
-        <?php if ($view['security']->isGranted('ROLE_PREVIOUS_ADMIN')): ?>
-            <a href="<?php echo $view['router']->path('homepage', array(
-                '_switch_user' => '_exit',
-            )) ?>">
-                Exit impersonation
-            </a>
-        <?php endif ?>
-
-In some cases you may need to get the object that represents the impersonator
+In some cases, you may need to get the object that represents the impersonator
 user rather than the impersonated user. Use the following snippet to iterate
-over the user's roles until you find one that a ``SwitchUserRole`` object::
+over the user's roles until you find one that is a ``SwitchUserRole`` object::
 
-    use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-    use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
     use Symfony\Component\Security\Core\Role\SwitchUserRole;
+    use Symfony\Component\Security\Core\Security;
+    // ...
 
-    private $authorizationChecker;
-    private $tokenStorage;
-
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, TokenStorageInterface $tokenStorage)
+    public class SomeService
     {
-        $this->authorizationChecker = $authorizationChecker;
-        $this->tokenStorage = $tokenStorage;
-    }
+        private $security;
 
-    public function someMethod()
-    {
-        // ...
+        public function __construct(Security $security)
+        {
+            $this->security = $security;
+        }
 
-        if ($authorizationChecker->isGranted('ROLE_PREVIOUS_ADMIN')) {
-            foreach ($tokenStorage->getToken()->getRoles() as $role) {
-                if ($role instanceof SwitchUserRole) {
-                    $impersonatorUser = $role->getSource()->getUser();
-                    break;
+        public function someMethod()
+        {
+            // ...
+
+            if ($this->security->isGranted('ROLE_PREVIOUS_ADMIN')) {
+                foreach ($this->security->getToken()->getRoles() as $role) {
+                    if ($role instanceof SwitchUserRole) {
+                        $impersonatorUser = $role->getSource()->getUser();
+                        break;
+                    }
                 }
             }
         }
     }
 
-Of course, this feature needs to be made available to a small group of users.
+Controlling the Query Parameter
+-------------------------------
+
+This feature needs to be available only to a restricted group of users.
 By default, access is restricted to users having the ``ROLE_ALLOWED_TO_SWITCH``
-role. The name of this role can be modified via the ``role`` setting. For
-extra security, you can also change the query parameter name via the ``parameter``
-setting:
+role. The name of this role can be modified via the ``role`` setting. You can
+also adjust the query parameter name via the ``parameter`` setting:
 
 .. configuration-block::
 
@@ -198,7 +198,7 @@ The :doc:`/session/locale_sticky_session` article does not update the locale
 when you impersonate a user. If you *do* want to be sure to update the locale when
 you switch users, add an event subscriber on this event::
 
-    // src/EventListener/SwitchUserListener.php
+    // src/EventListener/SwitchUserSubscriber.php
     namespace App\EventListener;
 
     use Symfony\Component\Security\Http\Event\SwitchUserEvent;
@@ -209,11 +209,15 @@ you switch users, add an event subscriber on this event::
     {
         public function onSwitchUser(SwitchUserEvent $event)
         {
-            $event->getRequest()->getSession()->set(
-                '_locale',
-                // assuming your User has some getLocale() method
-                $event->getTargetUser()->getLocale()
-            );
+            $request = $event->getRequest();
+
+            if ($request->hasSession() && ($session = $request->getSession)) {
+                $session->set(
+                    '_locale',
+                    // assuming your User has some getLocale() method
+                    $event->getTargetUser()->getLocale()
+                );
+            }
         }
 
         public static function getSubscribedEvents()

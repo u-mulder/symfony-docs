@@ -109,6 +109,13 @@ between all of the constraints in your user table:
             }
         }
 
+.. caution::
+
+    This constraint doesn't provide any protection against `race conditions`_.
+    They may occur when another entity is persisted by an external process after
+    this validation has passed and before this entity is actually persisted in
+    the database.
+
 Options
 -------
 
@@ -140,6 +147,14 @@ Messages can include the ``{{ value }}`` placeholder to display a string
 representation of the invalid entity. If the entity doesn't define the
 ``__toString()`` method, the following generic value will be used: *"Object of
 class __CLASS__ identified by <comma separated IDs>"*
+
+You can use the following parameters in this message:
+
++-----------------+-----------------------------+
+| Parameter       | Description                 |
++=================+=============================+
+| ``{{ value }}`` | The current (invalid) value |
++-----------------+-----------------------------+
 
 em
 ~~
@@ -280,3 +295,5 @@ If set to ``false``, only one ``null`` value is allowed - if a second entity
 also has a ``null`` value, validation would fail.
 
 .. include:: /reference/constraints/_payload-option.rst.inc
+
+.. _`race conditions`: https://en.wikipedia.org/wiki/Race_condition

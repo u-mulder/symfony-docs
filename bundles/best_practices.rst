@@ -23,7 +23,7 @@ vendor segment, followed by zero or more category segments, and it ends with the
 namespace short name, which must end with ``Bundle``.
 
 A namespace becomes a bundle as soon as you add a bundle class to it. The
-bundle class name must follow these simple rules:
+bundle class name must follow these rules:
 
 * Use only alphanumeric characters and underscores;
 * Use a StudlyCaps name (i.e. camelCase with the first letter uppercased);
@@ -239,7 +239,7 @@ of Symfony and the latest beta release:
         # it helps with testing legacy code and deprecations (composer require symfony/phpunit-bridge)
         - ./vendor/bin/simple-phpunit $PHPUNIT_FLAGS
 
-Consider using `Travis cron`_ too to make sure your project is built even if
+Consider using the `Travis cron`_ tool to make sure your project is built even if
 there are no new pull requests or commits.
 
 Installation
@@ -467,8 +467,9 @@ Retrieve the configuration parameters in your code from the container::
 
     $container->getParameter('acme_blog.author.email');
 
-Even if this mechanism is simple enough, you should consider using the more
-advanced :doc:`semantic bundle configuration </bundles/configuration>`.
+While this mechanism requires the least effort, you should consider using the
+more advanced :doc:`semantic bundle configuration </bundles/configuration>` to
+make your configuration more robust.
 
 Versioning
 ----------

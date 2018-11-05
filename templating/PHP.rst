@@ -21,7 +21,7 @@ If you want to use the PHP templating engine, first install the templating compo
 
 .. code-block:: terminal
 
-    $ composer require templating
+    $ composer require symfony/templating
 
 Next, enable the php engine:
 
@@ -126,7 +126,7 @@ the ``extend()`` call:
     <!-- src/Resources/views/hello/index.html.php -->
     <?php $view->extend('layout.html.php') ?>
 
-    Hello <?php echo $name ?>!
+    Hello <?= $name ?>!
 
 Now, have a look at the ``layout.html.php`` file:
 
@@ -183,7 +183,7 @@ decorating the template. In the ``index.html.php`` template, define a
 
     <?php $view['slots']->set('title', 'Hello World Application') ?>
 
-    Hello <?php echo $name ?>!
+    Hello <?= $name ?>!
 
 The base layout already has the code to output the title in the header:
 
@@ -221,7 +221,7 @@ Create a ``hello.html.php`` template:
 .. code-block:: html+php
 
     <!-- src/Resources/views/hello/hello.html.php -->
-    Hello <?php echo $name ?>!
+    Hello <?= $name ?>!
 
 And change the ``index.html.php`` template to include it:
 
@@ -230,7 +230,7 @@ And change the ``index.html.php`` template to include it:
     <!-- src/Resources/views/hello/index.html.php -->
     <?php $view->extend('layout.html.php') ?>
 
-    <?php echo $view->render('hello/hello.html.php', array('name' => $name)) ?>
+    <?= $view->render('hello/hello.html.php', array('name' => $name)) ?>
 
 The ``render()`` method evaluates and returns the content of another template
 (this is the exact same method as the one used in the controller).
@@ -246,12 +246,12 @@ That's very useful when working with Ajax, or when the embedded template needs
 some variable not available in the main template.
 
 If you create a ``fancy`` action, and want to include it into the
-``index.html.php`` template, simply use the following code:
+``index.html.php`` template, use the following code:
 
 .. code-block:: html+php
 
     <!-- src/Resources/views/hello/index.html.php -->
-    <?php echo $view['actions']->render(
+    <?= $view['actions']->render(
         new \Symfony\Component\HttpKernel\Controller\ControllerReference(
             'App\Controller\HelloController::fancy',
             array(
@@ -271,7 +271,7 @@ you more about those.
 Using Template Helpers
 ----------------------
 
-The Symfony templating system can be easily extended via helpers. Helpers are
+The Symfony templating system can be extended via helpers. Helpers are
 PHP objects that provide features useful in a template context. ``actions`` and
 ``slots`` are two of the built-in Symfony helpers.
 
@@ -280,12 +280,12 @@ Creating Links between Pages
 
 Speaking of web applications, creating links between pages is a must. Instead
 of hardcoding URLs in templates, the ``router`` helper knows how to generate
-URLs based on the routing configuration. That way, all your URLs can be easily
+URLs based on the routing configuration. That way, all your URLs can be
 updated by changing the configuration:
 
 .. code-block:: html+php
 
-    <a href="<?php echo $view['router']->path('hello', array('name' => 'Thomas')) ?>">
+    <a href="<?= $view['router']->path('hello', array('name' => 'Thomas')) ?>">
         Greet Thomas!
     </a>
 
@@ -305,13 +305,13 @@ Using Assets: Images, JavaScripts and Stylesheets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 What would the Internet be without images, JavaScripts, and stylesheets?
-Symfony provides the ``assets`` tag to deal with them easily:
+Symfony provides the ``assets`` tag to deal with them:
 
 .. code-block:: html+php
 
-    <link href="<?php echo $view['assets']->getUrl('css/blog.css') ?>" rel="stylesheet" type="text/css" />
+    <link href="<?= $view['assets']->getUrl('css/blog.css') ?>" rel="stylesheet" type="text/css" />
 
-    <img src="<?php echo $view['assets']->getUrl('images/logo.png') ?>" />
+    <img src="<?= $view['assets']->getUrl('images/logo.png') ?>" />
 
 The ``assets`` helper's main purpose is to make your application more
 portable. Thanks to this helper, you can move the application root directory
@@ -339,12 +339,228 @@ Output Escaping
 When using PHP templates, escape variables whenever they are displayed to the
 user::
 
-    <?php echo $view->escape($var) ?>
+    <?= $view->escape($var) ?>
 
 By default, the ``escape()`` method assumes that the variable is outputted
 within an HTML context. The second argument lets you change the context. For
 instance, to output something in a JavaScript script, use the ``js`` context::
 
-    <?php echo $view->escape($var, 'js') ?>
+    <?= $view->escape($var, 'js') ?>
+
+Form Theming in PHP
+-------------------
+
+When using PHP as a templating engine, the only method to customize a fragment
+is to create a new template file - this is similar to the second method used by
+Twig.
+
+The template file must be named after the fragment. You must create a ``integer_widget.html.php``
+file in order to customize the ``integer_widget`` fragment.
+
+.. code-block:: html+php
+
+    <!-- src/Resources/integer_widget.html.php -->
+    <div class="integer_widget">
+        <?= $view['form']->block(
+            $form,
+            'form_widget_simple',
+            array('type' => isset($type) ? $type : "number")
+        ) ?>
+    </div>
+
+Now that you've created the customized form template, you need to tell Symfony
+to use it. Inside the template where you're actually rendering your form,
+tell Symfony to use the theme via the ``setTheme()`` helper method::
+
+    <?php $view['form']->setTheme($form, array(':form')) ?>
+
+    <?php $view['form']->widget($form['age']) ?>
+
+When the ``form.age`` widget is rendered, Symfony will use the customized
+``integer_widget.html.php`` template and the ``input`` tag will be wrapped in
+the ``div`` element.
+
+If you want to apply a theme to a specific child form, pass it to the ``setTheme()``
+method::
+
+    <?php $view['form']->setTheme($form['child'], ':form') ?>
+
+.. note::
+
+    The ``:form`` syntax is based on the functional names for templates:
+    ``Bundle:Directory``. As the form directory lives in the
+    ``templates/`` directory, the ``Bundle`` part is empty, resulting
+    in ``:form``.
+
+Making Application-wide Customizations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you'd like a certain form customization to be global to your application,
+you can accomplish this by making the form customizations in an external
+template and then importing it inside your application configuration.
+
+By using the following configuration, any customized form fragments inside the
+``templates/form`` folder will be used globally when a
+form is rendered.
+
+.. configuration-block::
+
+    .. code-block:: yaml
+
+        # config/packages/framework.yaml
+        framework:
+            templating:
+                form:
+                    resources:
+                        - 'App:Form'
+            # ...
+
+    .. code-block:: xml
+
+        <!-- config/packages/framework.xml -->
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:framework="http://symfony.com/schema/dic/symfony"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/symfony
+                http://symfony.com/schema/dic/symfony/symfony-1.0.xsd">
+
+            <framework:config>
+                <framework:templating>
+                    <framework:form>
+                        <framework:resource>App:Form</framework:resource>
+                    </framework:form>
+                </framework:templating>
+                <!-- ... -->
+            </framework:config>
+        </container>
+
+    .. code-block:: php
+
+        // config/packages/framework.php
+        // PHP
+        $container->loadFromExtension('framework', array(
+            'templating' => array(
+                'form' => array(
+                    'resources' => array(
+                        'App:Form',
+                    ),
+                ),
+             ),
+
+             // ...
+        ));
+
+By default, the PHP engine uses a *div* layout when rendering forms. Some people,
+however, may prefer to render forms in a *table* layout. Use the ``FrameworkBundle:FormTable``
+resource to use such a layout:
+
+.. configuration-block::
+
+    .. code-block:: yaml
+
+        # config/packages/framework.yaml
+        framework:
+            templating:
+                form:
+                    resources:
+                        - 'FrameworkBundle:FormTable'
+
+    .. code-block:: xml
+
+        <!-- config/packages/framework.xml -->
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:framework="http://symfony.com/schema/dic/symfony"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/symfony
+                http://symfony.com/schema/dic/symfony/symfony-1.0.xsd">
+
+            <framework:config>
+                <framework:templating>
+                    <framework:form>
+                        <resource>FrameworkBundle:FormTable</resource>
+                    </framework:form>
+                </framework:templating>
+                <!-- ... -->
+            </framework:config>
+        </container>
+
+    .. code-block:: php
+
+        // config/packages/framework.php
+        $container->loadFromExtension('framework', array(
+            'templating' => array(
+                'form' => array(
+                    'resources' => array(
+                        'FrameworkBundle:FormTable',
+                    ),
+                ),
+            ),
+
+             // ...
+        ));
+
+If you only want to make the change in one template, add the following line to
+your template file rather than adding the template as a resource:
+
+.. code-block:: html+php
+
+    <?php $view['form']->setTheme($form, array('FrameworkBundle:FormTable')) ?>
+
+Note that the ``$form`` variable in the above code is the form view variable
+that you passed to your template.
+
+Adding a "Required" Asterisk to Field Labels
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you want to denote all of your required fields with a required asterisk
+(``*``), you can do this by customizing the ``form_label`` fragment.
+
+When using PHP as a templating engine you have to copy the content from the
+original template:
+
+.. code-block:: html+php
+
+    <!-- form_label.html.php -->
+
+    <!-- original content -->
+    <?php if ($required) { $label_attr['class'] = trim((isset($label_attr['class']) ? $label_attr['class'] : '').' required'); } ?>
+    <?php if (!$compound) { $label_attr['for'] = $id; } ?>
+    <?php if (!$label) { $label = $view['form']->humanize($name); } ?>
+    <label <?php foreach ($label_attr as $k => $v) { printf('%s="%s" ', $view->escape($k), $view->escape($v)); } ?>><?= $view->escape($view['translator']->trans($label, array(), $translation_domain)) ?></label>
+
+    <!-- customization -->
+    <?php if ($required) : ?>
+        <span class="required" title="This field is required">*</span>
+    <?php endif ?>
+
+Adding "help" Messages
+~~~~~~~~~~~~~~~~~~~~~~
+
+You can also customize your form widgets to have an optional "help" message.
+
+When using PHP as a templating engine you have to copy the content from the
+original template:
+
+.. code-block:: html+php
+
+    <!-- form_widget_simple.html.php -->
+
+    <!-- Original content -->
+    <input
+        type="<?= isset($type) ? $view->escape($type) : 'text' ?>"
+        <?php if (!empty($value)): ?>value="<?= $view->escape($value) ?>"<?php endif ?>
+        <?= $view['form']->block($form, 'widget_attributes') ?>
+    />
+
+    <!-- Customization -->
+    <?php if (isset($help)) : ?>
+        <span class="help"><?= $view->escape($help) ?></span>
+    <?php endif ?>
 
 .. _`@Template`: https://symfony.com/doc/current/bundles/SensioFrameworkExtraBundle/annotations/view

@@ -1,7 +1,7 @@
 Advanced Webpack Config
 =======================
 
-Quite simply, Encore generates the Webpack configuration that's used in your
+Encore generates the Webpack configuration that's used in your
 ``webpack.config.js`` file. Encore doesn't support adding all of Webpack's
 `configuration options`_, because many can be easily added on your own.
 
@@ -51,9 +51,9 @@ state of the current configuration to build a new one:
 
     // define the first configuration
     Encore
-        .setOutputPath('web/build/')
+        .setOutputPath('public/build/')
         .setPublicPath('/build')
-        .addEntry('app', './assets/js/main.js')
+        .addEntry('app', './assets/js/app.js')
         .addStyleEntry('global', './assets/css/global.scss')
         .enableSassLoader()
         .autoProvidejQuery()
@@ -71,7 +71,7 @@ state of the current configuration to build a new one:
 
     // define the second configuration
     Encore
-        .setOutputPath('web/build/')
+        .setOutputPath('public/build/')
         .setPublicPath('/build')
         .addEntry('mobile', './assets/js/mobile.js')
         .addStyleEntry('mobile', './assets/css/mobile.less')
@@ -93,7 +93,7 @@ prefer to build configs separately, pass the ``--config-name`` option:
 
 .. code-block:: terminal
 
-    $ yarn run encore dev --config-name firstConfig
+    $ yarn encore dev --config-name firstConfig
 
 .. _`configuration options`: https://webpack.js.org/configuration/
 .. _`Webpack's watchOptions`: https://webpack.js.org/configuration/watch/#watchoptions

@@ -19,7 +19,7 @@ install the validator before using it:
 
 .. code-block:: terminal
 
-    $ composer require validator
+    $ composer require symfony/validator doctrine/annotations
 
 .. index::
    single: Validation; The basics
@@ -43,8 +43,9 @@ So far, this is just an ordinary class that serves some purpose inside your
 application. The goal of validation is to tell you if the data
 of an object is valid. For this to work, you'll configure a list of rules
 (called :ref:`constraints <validation-constraints>`) that the object must
-follow in order to be valid. These rules can be specified via a number of
-different formats (YAML, XML, annotations, or PHP).
+follow in order to be valid. These rules are usually defined using PHP code or
+annotations but they can also be defined as a ``validation.yaml`` or
+``validation.xml`` file inside the ``config/validator/`` directory:
 
 For example, to guarantee that the ``$name`` property is not empty, add the
 following:
@@ -121,7 +122,7 @@ Using the ``validator`` Service
 
 Next, to actually validate an ``Author`` object, use the ``validate()`` method
 on the ``validator`` service (class :class:`Symfony\\Component\\Validator\\Validator`).
-The job of the ``validator`` is easy: to read the constraints (i.e. rules)
+The job of the ``validator`` is to read the constraints (i.e. rules)
 of a class and verify if the data on the object satisfies those
 constraints. If validation fails, a non-empty list of errors
 (class :class:`Symfony\\Component\\Validator\\ConstraintViolationList`) is
@@ -183,27 +184,15 @@ You could also pass the collection of errors into a template::
 
 Inside the template, you can output the list of errors exactly as needed:
 
-.. configuration-block::
+.. code-block:: html+twig
 
-    .. code-block:: html+twig
-
-        {# templates/author/validation.html.twig #}
-        <h3>The author has the following errors</h3>
-        <ul>
-        {% for error in errors %}
-            <li>{{ error.message }}</li>
-        {% endfor %}
-        </ul>
-
-    .. code-block:: html+php
-
-        <!-- templates/author/validation.html.php -->
-        <h3>The author has the following errors</h3>
-        <ul>
-        <?php foreach ($errors as $error): ?>
-            <li><?php echo $error->getMessage() ?></li>
-        <?php endforeach ?>
-        </ul>
+    {# templates/author/validation.html.twig #}
+    <h3>The author has the following errors</h3>
+    <ul>
+    {% for error in errors %}
+        <li>{{ error.message }}</li>
+    {% endfor %}
+    </ul>
 
 .. note::
 
@@ -493,7 +482,7 @@ options can be specified in this way.
 This is purely meant to make the configuration of the most common option of
 a constraint shorter and quicker.
 
-If you're ever unsure of how to specify an option, either check the API documentation
+If you're ever unsure of how to specify an option, either check :namespace:`Symfony\\Component\\Validator\\Constraints`
 for the constraint or play it safe by always passing in an array of options
 (the first method shown above).
 
@@ -512,14 +501,6 @@ of the form fields::
             ))
         ;
     }
-
-The ``constraints`` option is only available if the ``ValidatorExtension``
-was enabled through the form factory builder::
-
-    Forms::createFormFactoryBuilder()
-        ->addExtension(new ValidatorExtension(Validation::createValidator()))
-        ->getFormFactory()
-    ;
 
 .. index::
    single: Validation; Constraint targets

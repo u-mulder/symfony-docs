@@ -4,6 +4,11 @@
 Forms
 =====
 
+.. admonition:: Screencast
+    :class: screencast
+
+    Do you prefer video tutorials? Check out the `Symfony Forms screencast series`_.
+
 Dealing with HTML forms is one of the most common - and challenging - tasks for
 a web developer. Symfony integrates a Form component that makes dealing with
 forms easy. In this article, you'll build a complex form from the ground up,
@@ -17,7 +22,7 @@ install the form feature before using it:
 
 .. code-block:: terminal
 
-    $ composer require form
+    $ composer require symfony/form
 
 .. note::
 
@@ -66,9 +71,9 @@ going to need to build a form. But before you begin, first focus on the generic
     }
 
 This class is a "plain-old-PHP-object" because, so far, it has nothing
-to do with Symfony or any other library. It's quite simply a normal PHP object
+to do with Symfony or any other library. It's a normal PHP object
 that directly solves a problem inside *your* application (i.e. the need to
-represent a task in your application). Of course, by the end of this article,
+represent a task in your application). By the end of this article,
 you'll be able to submit data to a ``Task`` instance (via an HTML form), validate
 its data and persist it to the database.
 
@@ -87,13 +92,13 @@ from inside a controller::
     namespace App\Controller;
 
     use App\Entity\Task;
-    use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
     use Symfony\Component\HttpFoundation\Request;
     use Symfony\Component\Form\Extension\Core\Type\TextType;
     use Symfony\Component\Form\Extension\Core\Type\DateType;
     use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
-    class DefaultController extends Controller
+    class DefaultController extends AbstractController
     {
         public function new(Request $request)
         {
@@ -149,21 +154,12 @@ done by passing a special form "view" object to your template (notice the
 ``$form->createView()`` in the controller above) and using a set of form
 helper functions:
 
-.. configuration-block::
+.. code-block:: html+twig
 
-    .. code-block:: html+twig
-
-        {# templates/default/new.html.twig #}
-        {{ form_start(form) }}
-        {{ form_widget(form) }}
-        {{ form_end(form) }}
-
-    .. code-block:: html+php
-
-        <!-- templates/default/new.html.php -->
-        <?php echo $view['form']->start($form) ?>
-        <?php echo $view['form']->widget($form) ?>
-        <?php echo $view['form']->end($form) ?>
+    {# templates/default/new.html.twig #}
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
 
 .. image:: /_images/form/simple-form.png
     :align: center
@@ -321,7 +317,7 @@ Before using validation, add support for it in your application:
 
 .. code-block:: terminal
 
-    $ composer require validator
+    $ composer require symfony/validator
 
 Validation is done by adding a set of rules (called constraints) to a class. To
 see this in action, add validation constraints so that the ``task`` field cannot
@@ -429,21 +425,12 @@ Validation is a very powerful feature of Symfony and has its own
     but are being prevented by your browser from, for example, submitting
     blank fields.
 
-    .. configuration-block::
+    .. code-block:: html+twig
 
-        .. code-block:: html+twig
-
-            {# templates/default/new.html.twig #}
-            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
-            {{ form_widget(form) }}
-            {{ form_end(form) }}
-
-        .. code-block:: html+php
-
-            <!-- templates/default/new.html.php -->
-            <?php echo $view['form']->start($form, array('attr' => array('novalidate' => 'novalidate') ?>
-            <?php echo $view['form']->widget($form) ?>
-            <?php echo $view['form']->end($form) ?>
+        {# templates/default/new.html.twig #}
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        {{ form_widget(form) }}
+        {{ form_end(form) }}
 
 .. index::
    single: Forms; Built-in field types
@@ -627,7 +614,7 @@ that will house the logic for building the task form::
     }
 
 This new class contains all the directions needed to create the task form. It can
-be used to quickly build a form object in the controller::
+be used to build a form object in the controller::
 
     // src/Controller/DefaultController.php
     use App\Form\TaskType;
@@ -640,7 +627,7 @@ be used to quickly build a form object in the controller::
         // ...
     }
 
-Placing the form logic into its own class means that the form can be easily
+Placing the form logic into its own class means that the form can be
 reused elsewhere in your project. This is the best way to create forms, but
 the choice is ultimately up to you.
 
@@ -732,3 +719,4 @@ Learn more
 
 .. _`Symfony Form component`: https://github.com/symfony/form
 .. _`DateTime`: https://php.net/manual/en/class.datetime.php
+.. _`Symfony Forms screencast series`: https://symfonycasts.com/screencast/symfony-forms

@@ -1,7 +1,7 @@
 The Symfony 3.3 DI Container Changes Explained (autowiring, _defaults, etc)
 ===========================================================================
 
-If you look at the ``services.yaml`` file in a new Symfony 3.3 project, you'll
+If you look at the ``services.yaml`` file in a new Symfony 3.3 or newer project, you'll
 notice some big changes: ``_defaults``, ``autowiring``, ``autoconfigure`` and more.
 These features are designed to *automate* configuration and make development faster,
 without sacrificing predictability, which is very important! Another goal is to make
@@ -81,32 +81,6 @@ what the file looks like in Symfony 4):
             </services>
         </container>
 
-    .. code-block:: php
-
-        // config/services.php
-        use Symfony\Component\DependencyInjection\Definition;
-
-        // To use as default template
-        $definition = new Definition();
-
-        $definition
-            ->setAutowired(true)
-            ->setAutoconfigured(true)
-            ->setPublic(false)
-        ;
-
-        $this->registerClasses($definition, 'App\\', '../src/*', '../src/{Entity,Migrations,Tests}');
-
-        // Changes default config
-        $definition
-            ->addTag('controller.service_arguments')
-        ;
-
-        // $this is a reference to the current loader
-        $this->registerClasses($definition, 'App\\Controller\\', '../src/Controller/*');
-
-        // add more services, or override services that need manual wiring
-
 This small bit of configuration contains a paradigm shift of how services
 are configured in Symfony.
 
@@ -151,22 +125,6 @@ thanks to the following config:
                 <prototype namespace="App\" resource="../src/*" exclude="../src/{Entity,Migrations,Tests}" />
             </services>
         </container>
-
-    .. code-block:: php
-
-        // config/services.php
-        use Symfony\Component\DependencyInjection\Definition;
-
-        // To use as default template
-        $definition = new Definition();
-
-        $definition
-            ->setAutowired(true)
-            ->setAutoconfigured(true)
-            ->setPublic(false)
-        ;
-
-        $this->registerClasses($definition, 'App\\', '../src/*', '../src/{Entity,Migrations,Tests}');
 
 This means that every class in ``src/`` is *available* to be used as a
 service. And thanks to the ``_defaults`` section at the top of the file, all of
@@ -368,7 +326,7 @@ The third big change is that, in a new Symfony 3.3 project, your controllers are
         $this->registerClasses($definition, 'App\\Controller\\', '../src/Controller/*');
 
 But, you might not even notice this. First, your controllers *can* still extend
-the same base ``Controller`` class or a new :ref:`AbstractController <controller-abstract-versus-controller>`.
+the same base controller class (``AbstractController``).
 This means you have access to all of the same shortcuts as before. Additionally,
 the ``@Route`` annotation and ``_controller`` syntax (e.g. ``App:Default:homepage``)
 used in routing will automatically use your controller as a service (as long as its
@@ -385,9 +343,9 @@ action methods, just like you can with the constructor of services. For example:
 
     use Psr\Log\LoggerInterface;
 
-    class InvoiceController extends Controller
+    class InvoiceController extends AbstractController
     {
-        public function listAction(LoggerInterface $logger)
+        public function listInvoices(LoggerInterface $logger)
         {
             $logger->info('A new way to access services!');
         }
@@ -444,7 +402,7 @@ it implements ``EventSubscriberInterface``.
 In this case, you've created a class that implements ``EventSubscriberInterface``
 and registered it as a service. This is more than enough for the container to know
 that you want this to be used as an event subscriber: more configuration is not needed.
-And the tags system is its own, Symfony-specific mechanism. And of course, you can
+And the tags system is its own, Symfony-specific mechanism. And you can
 always set ``autoconfigure`` to ``false`` in ``services.yaml``, or disable it for a specific
 service.
 
@@ -460,7 +418,7 @@ see what it autoconfigures.
     What if I need to add a priority to my tag?
 
 Many autoconfigured tags have an optional priority. If you need to specify a priority
-(or any other optional tag attribute), no problem! Just :ref:`manually configure your service <services-manually-wire-args>`
+(or any other optional tag attribute), no problem! :ref:`Manually configure your service <services-manually-wire-args>`
 and add the tag. Your tag will take precedence over the one added by auto-configuration.
 
 5) Auto-configure with _instanceof
@@ -503,18 +461,6 @@ inherited from an abstract definition:
                 </instanceof>
             </services>
         </container>
-
-    .. code-block:: php
-
-        // config/services.php
-        use App\Domain\LoaderInterface;
-
-        // ...
-
-        /* This method returns a child definition to define the default
-           configuration of the given class or interface */
-        $container->registerForAutoconfiguration(LoaderInterface::class)
-            ->addTag('app.domain_loader');
 
 What about Performance
 ----------------------
@@ -577,7 +523,7 @@ Start by adding a ``_defaults`` section with ``autowire`` and ``autoconfigure``.
 
         # ...
 
-This step is easy: you're already *explicitly* configuring all of your services.
+This step does not yet change anything yet: you're already *explicitly* configuring all of your services.
 So, ``autowire`` does nothing. You're also already tagging your services, so
 ``autoconfigure`` also doesn't change any existing services.
 
@@ -622,6 +568,24 @@ Start by updating the service ids to class names:
     you can't redefine the service as ``Twig_Extensions_Extension_Intl: ~`` and
     you must keep the original ``class`` parameter.
 
+.. caution::
+
+    If a service is processed by a :doc:`compiler pass </service_container/compiler_passes>`,
+    you could face a  "You have requested a non-existent service" error.
+    To get rid of this, be sure that the Compiler Pass is using ``findDefinition()``
+    instead of ``getDefinition()``. The latter won't take aliases into
+    account when looking up for services.
+    Furthermore it is always recommended to check for definition existence
+    using ``has()`` function.
+
+.. note::
+
+    If you get rid of deprecations and make your controllers extend from
+    ``AbstractController`` instead of ``Controller``, you can skip the rest of
+    this step because ``AbstractController`` doesn't provide a container where
+    you can get the services from. All services need to be injected as explained
+    in the :ref:`step 5 of this article <step-5>`.
+
 But, this change will break our app! The old service ids (e.g. ``app.github_notifier``)
 no longer exist. The simplest way to fix this is to find all your old service ids
 and update them to the new class id: ``app.github_notifier`` to ``App\Service\GitHubNotifier``.
@@ -633,6 +597,8 @@ to the new id. Create a new ``legacy_aliases.yml`` file:
 
     # app/config/legacy_aliases.yml
     services:
+        _defaults:
+            public: true
         # aliases so that the old service ids can still be accessed
         # remove these if/when you are not fetching these directly
         # from the container via $container->get()
@@ -750,6 +716,8 @@ will be used. If you *don't* have this, the auto-registration feature will try t
 register a third ``ApiClient`` service and use that for autowiring (which will fail,
 because the class has a non-autowireable argument).
 
+.. _step-5:
+
 Step 5) Cleanup!
 ~~~~~~~~~~~~~~~~
 
@@ -761,8 +729,8 @@ code to not fetch this service directly from the container. For example:
 
 .. code-block:: diff
 
-    -     public function indexAction()
-    +     public function indexAction(GitHubNotifier $gitHubNotifier, MarkdownTransformer $markdownTransformer)
+    -     public function index()
+    +     public function index(GitHubNotifier $gitHubNotifier, MarkdownTransformer $markdownTransformer)
         {
     -         // the old way of fetching services
     -         $githubNotifier = $this->container->get('app.github_notifier');

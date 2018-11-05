@@ -17,6 +17,8 @@ Configuration
 * `Cache Directory`_
 * `Log Directory`_
 
+.. _configuration-kernel-charset:
+
 Charset
 ~~~~~~~
 
@@ -43,6 +45,11 @@ Kernel Name
 
 **type**: ``string`` **default**: ``src`` (i.e. the directory name holding
 the kernel class)
+
+.. versionadded:: 4.2
+    The ``kernel.name`` parameter and the ``Kernel::getName()`` method were
+    deprecated in Symfony 4.2. If you need a unique ID for your kernels use the
+    ``kernel.container_class`` parameter or the ``Kernel::getContainerClass()`` method.
 
 To change this setting, override the :method:`Symfony\\Component\\HttpKernel\\Kernel::getName`
 method. Alternatively, move your kernel into a different directory. For

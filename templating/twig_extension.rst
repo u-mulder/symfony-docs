@@ -32,8 +32,7 @@ money:
     {# pass in the 3 optional arguments #}
     {{ product.price|price(2, ',', '.') }}
 
-Create a class that extends the ``AbstractExtension`` class defined by Twig and
-fill in the logic::
+Create a class that extends ``AbstractExtension`` and fill in the logic::
 
     // src/Twig/AppExtension.php
     namespace App\Twig;
@@ -46,11 +45,11 @@ fill in the logic::
         public function getFilters()
         {
             return array(
-                new TwigFilter('price', array($this, 'priceFilter')),
+                new TwigFilter('price', array($this, 'formatPrice')),
             );
         }
 
-        public function priceFilter($number, $decimals = 0, $decPoint = '.', $thousandsSep = ',')
+        public function formatPrice($number, $decimals = 0, $decPoint = '.', $thousandsSep = ',')
         {
             $price = number_format($number, $decimals, $decPoint, $thousandsSep);
             $price = '$'.$price;
@@ -59,9 +58,33 @@ fill in the logic::
         }
     }
 
+If you want to create a function instead of a filter, define the
+``getFunctions()`` method::
+
+    // src/Twig/AppExtension.php
+    namespace App\Twig;
+
+    use Twig\Extension\AbstractExtension;
+    use Twig\TwigFunction;
+
+    class AppExtension extends AbstractExtension
+    {
+        public function getFunctions()
+        {
+            return array(
+                new TwigFunction('area', array($this, 'calculateArea')),
+            );
+        }
+
+        public function calculateArea(int $width, int $length)
+        {
+            return $width * $length;
+        }
+    }
+
 .. tip::
 
-    Along with custom filters, you can also add custom `functions`_ and register
+    Along with custom filters and functions, you can also register
     `global variables`_.
 
 Register an Extension as a Service
@@ -71,7 +94,16 @@ Next, register your class as a service and tag it with ``twig.extension``. If yo
 using the :ref:`default services.yaml configuration <service-container-services-load-example>`,
 you're done! Symfony will automatically know about your new service and add the tag.
 
+Optionally, execute this command to confirm that your new filter was
+successfully registered:
+
+.. code-block:: terminal
+
+    $ php bin/console debug:twig --filter=price
+
 You can now start using your filter in any Twig template.
+
+.. _lazy-loaded-twig-extensions:
 
 Creating Lazy-Loaded Twig Extensions
 ------------------------------------
@@ -98,14 +130,16 @@ callable defined in ``getFilters()``::
     namespace App\Twig;
 
     use App\Twig\AppRuntime;
+    use Twig\Extension\AbstractExtension;
+    use Twig\TwigFilter;
 
-    class AppExtension extends \Twig_Extension
+    class AppExtension extends AbstractExtension
     {
         public function getFilters()
         {
             return array(
                 // the logic of this filter is now implemented in a different class
-                new \Twig_SimpleFilter('price', array(AppRuntime::class, 'priceFilter')),
+                new TwigFilter('price', array(AppRuntime::class, 'priceFilter')),
             );
         }
     }
@@ -117,7 +151,9 @@ previous ``priceFilter()`` method::
     // src/Twig/AppRuntime.php
     namespace App\Twig;
 
-    class AppRuntime
+    use Twig\Extension\RuntimeExtensionInterface;
+
+    class AppRuntime implements RuntimeExtensionInterface
     {
         public function __construct()
         {
@@ -139,7 +175,6 @@ work! Otherwise, :ref:`create a service <service-container-creating-service>`
 for this class and :doc:`tag your service </service_container/tags>` with ``twig.runtime``.
 
 .. _`official Twig extensions`: https://github.com/twigphp/Twig-extensions
-.. _`Twig extensions documentation`: http://twig.sensiolabs.org/doc/advanced.html#creating-an-extension
-.. _`global variables`: http://twig.sensiolabs.org/doc/advanced.html#id1
-.. _`functions`: http://twig.sensiolabs.org/doc/advanced.html#id2
-.. _`Twig Extensions`: https://twig.sensiolabs.org/doc/2.x/advanced.html#creating-an-extension
+.. _`global variables`: https://twig.symfony.com/doc/2.x/advanced.html#id1
+.. _`functions`: https://twig.symfony.com/doc/2.x/advanced.html#id2
+.. _`Twig Extensions`: https://twig.symfony.com/doc/2.x/advanced.html#creating-an-extension

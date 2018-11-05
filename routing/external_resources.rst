@@ -98,7 +98,7 @@ suppose you want to prefix all application routes with ``/site`` (e.g.
 
     .. code-block:: php-annotations
 
-        use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+        use Symfony\Component\Routing\Annotation\Route;
 
         /**
          * @Route("/site")
@@ -147,6 +147,53 @@ suppose you want to prefix all application routes with ``/site`` (e.g.
 The path of each route being loaded from the new routing resource will now
 be prefixed with the string ``/site``.
 
+.. note::
+
+    If any of the prefixed routes defines an empty path, Symfony adds a trailing
+    slash to it. In the previous example, an empty path prefixed with ``/site``
+    will result in the ``/site/`` URL. If you want to avoid this behavior, set
+    the ``trailing_slash_on_root`` option to ``false``:
+
+    .. configuration-block::
+
+        .. code-block:: yaml
+
+            # config/routes.yaml
+            controllers:
+                resource: '../src/Controller/'
+                type:     annotation
+                prefix:   /site
+                trailing_slash_on_root: false
+
+        .. code-block:: xml
+
+            <!-- config/routes.xml -->
+            <?xml version="1.0" encoding="UTF-8" ?>
+            <routes xmlns="http://symfony.com/schema/routing"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://symfony.com/schema/routing
+                    http://symfony.com/schema/routing/routing-1.0.xsd">
+
+                <import
+                    resource="../src/Controller/"
+                    type="annotation"
+                    prefix="/site"
+                    trailing-slash-on-root="false" />
+            </routes>
+
+        .. code-block:: php
+
+            // config/routes.php
+            use Symfony\Component\Routing\RouteCollection;
+
+            $app = $loader->import('../src/Controller/', 'annotation');
+            // the second argument is the $trailingSlashOnRoot option
+            $app->addPrefix('/site', false);
+            // ...
+
+    .. versionadded:: 4.1
+        The ``trailing_slash_on_root`` option was introduced in Symfony 4.1.
+
 Prefixing the Names of Imported Routes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -162,12 +209,12 @@ a controller class or imported from a configuration file:
         /**
          * @Route(name="blog_")
          */
-        class BlogController extends Controller
+        class BlogController extends AbstractController
         {
             /**
              * @Route("/blog", name="index")
              */
-            public function indexAction()
+            public function index()
             {
                 // ...
             }
@@ -175,7 +222,7 @@ a controller class or imported from a configuration file:
             /**
              * @Route("/blog/posts/{slug}", name="post")
              */
-            public function showAction(Post $post)
+            public function show(Post $post)
             {
                 // ...
             }

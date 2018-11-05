@@ -1,12 +1,14 @@
 FAQ and Common Issues
 =====================
 
-How do I deploy my Encore Assets?
+.. _how-do-i-deploy-my-encore-assets:
+
+How Do I Deploy My Encore Assets?
 ---------------------------------
 
 There are two important things to remember when deploying your assets.
 
-**1) Run ``encore production``**
+**1) Compile Assets for Production**
 
 Optimize your assets for production by running:
 
@@ -17,11 +19,12 @@ Optimize your assets for production by running:
 That will minify your assets and make other performance optimizations. Yay!
 
 But, what server should you run this command on? That depends on how you deploy.
-For example, you could execute this locally (or on a build server), and use rsync
-or something else to transfer the built files to your server. Or, you could put your
-files on your production server first (e.g. via a git pull) and then run this command
-on production (ideally, before traffic hits your code). In this case, you'll need
-to install Node.js on your production server.
+For example, you could execute this locally (or on a build server), and use
+`rsync`_ or something else to transfer the generated files to your production
+server. Or, you could put your files on your production server first (e.g. via
+``git pull``) and then run this command on production (ideally, before traffic
+hits your code). In this case, you'll need to install Node.js on your production
+server.
 
 **2) Only Deploy the Built Assets**
 
@@ -32,13 +35,13 @@ asset files, **unless** you plan on running ``encore production`` on your produc
 machine. Once your assets are built, these are the *only* thing that need to live
 on the production server.
 
-Do I need to Install Node.js on my Production Server?
+Do I Need to Install Node.js on My Production Server?
 -----------------------------------------------------
 
 No, unless you plan to build your production assets on your production server,
-which is not recommended. See `How do I deploy my Encore Assets?`_.
+which is not recommended. See `How Do I Deploy my Encore Assets?`_.
 
-What Files Should I commit to git? And which should I Ignore?
+What Files Should I Commit to git? And which Should I Ignore?
 -------------------------------------------------------------
 
 You should commit all of your files to git, except for the ``node_modules/`` directory
@@ -56,7 +59,7 @@ My App Lives under a Subdirectory
 ---------------------------------
 
 If your app does not live at the root of your web server (i.e. it lives under a subdirectory,
-like ``/myAppSubdir``), you just need to configure that when calling ``Encore.setPublicPrefix()``:
+like ``/myAppSubdir``), you need to configure that when calling ``Encore.setPublicPrefix()``:
 
 .. code-block:: diff
 
@@ -71,20 +74,15 @@ like ``/myAppSubdir``), you just need to configure that when calling ``Encore.se
     +     .setPublicPath('/myAppSubdir/build')
 
     +     // this is now needed so that your manifest.json keys are still `build/foo.js`
-    +     // i.e. you won't need to change anything in your Symfony app
+    +     // (which is a file that's used by Symfony's asset function)
     +     .setManifestKeyPrefix('build')
     ;
 
-If you're :ref:`processing your assets through manifest.json <load-manifest-files>`,
-you're done! The ``manifest.json`` file will now include the subdirectory in the
-final paths:
-
-.. code-block:: json
-
-    {
-        "build/app.js": "/myAppSubdir/build/app.123abc.js",
-        "build/dashboard.css": "/myAppSubdir/build/dashboard.a4bf2d.css"
-    }
+If you're using the ``encore_entry_script_tags()`` and ``encore_entry_link_tags()``
+Twig shortcuts (or are :ref:`processing your assets through entrypoints.json <load-manifest-files>`
+in some other way) you're done! These shortcut methods read from an
+:ref:`entrypoints.json <encore-entrypointsjson-simple-description>` file that will
+now contain the subdirectory.
 
 "jQuery is not defined" or "$ is not defined"
 ---------------------------------------------
@@ -99,9 +97,10 @@ code that you're using. See :doc:`/frontend/encore/legacy-apps` for the fix.
 Uncaught ReferenceError: webpackJsonp is not defined
 ----------------------------------------------------
 
-If you get this error, it's probably because you've just added a :doc:`shared entry </frontend/encore/shared-entry>`
-but you *forgot* to add a ``script`` tag for the new ``manifest.js`` file. See the
-information about the :ref:`script tags <encore-shared-entry-script>` in that section.
+If you get this error, it's probably because you've forgotten to add a ``script``
+tag for the ``runtime.js`` file that contains Webpack's runtime. If you're using
+the ``encore_entry_script_tags()`` Twig function, this should never happen: the
+file script tag is rendered automatically.
 
 This dependency was not found: some-module in ./path/to/file.js
 ---------------------------------------------------------------
@@ -129,3 +128,12 @@ this via:
 
     // require a non-minified file whenever possible
     require('respond.js/dest/respond.src.js');
+
+I need to execute Babel on a third-party Module
+-----------------------------------------------
+
+For performance, Encore does not process libraries inside ``node_modules/`` through
+Babel. But, you can change that via the ``configureBabel()`` method. See
+:doc:`/frontend/encore/babel` for details.
+
+.. _`rsync`: https://rsync.samba.org/

@@ -53,7 +53,7 @@ Using Source Control
 
 If you're using source control (e.g. Git or SVN), you can simplify by having
 your live installation also be a copy of your repository. When you're ready to
-upgrade it is as simple as fetching the latest updates from your source control
+upgrade, fetch the latest updates from your source control
 system. When using Git, a common approach is to create a tag for each release
 and check out the appropriate tag on deployment (see `Git Tagging`_).
 
@@ -78,7 +78,7 @@ There are also tools to help ease the pain of deployment. Some of them have been
 specifically tailored to the requirements of Symfony.
 
 `EasyDeployBundle`_
-    A Symfony bundle that adds easy deploy tools to your application.
+    A Symfony bundle that adds deploy tools to your application.
 
 `Deployer`_
     This is another native PHP rewrite of Capistrano, with some ready recipes for
@@ -104,7 +104,7 @@ specifically tailored to the requirements of Symfony.
     Helps you build a native Debian package for your Symfony project.
 
 Basic scripting
-    You can of course use shell, `Ant`_ or any other build tool to script
+    You can use a shell script, `Ant`_ or any other build tool to script
     the deploying of your project.
 
 Common Post-Deployment Tasks
@@ -116,11 +116,8 @@ you'll need to do:
 A) Check Requirements
 ~~~~~~~~~~~~~~~~~~~~~
 
-Check if your server meets the requirements by running:
-
-.. code-block:: terminal
-
-    $ php bin/symfony_requirements
+Use the :doc:`Symfony Requirements Checker </reference/requirements>` to check
+if your server meets the technical requirements to run Symfony applications.
 
 .. _b-configure-your-app-config-parameters-yml-file:
 
@@ -128,19 +125,34 @@ B) Configure your Environment Variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Most Symfony applications read their configuration from environment variables.
-While developing locally, you'll usually store these in a ``.env`` file. But on
-production, instead of creating this file, you should set *real* environment variables.
+While developing locally, you'll usually store these in a ``.env`` file. On production,
+you have two options:
 
-How you set environment variables, depends on your setup: they can be set at the
-command line, in your Nginx configuration, or via other methods provided by your
-hosting service.
+1. Create "real" environment variables. How you set environment variables, depends
+   on your setup: they can be set at the command line, in your Nginx configuration,
+   or via other methods provided by your hosting service.
+
+2. Or, create a ``.env`` file just like your local development (see note below)
+
+There is no significant advantage to either of the two options: use whatever is
+most natural in your hosting environment.
+
+.. note::
+
+    If you use the ``.env`` file on production, you may need to move your
+    ``symfony/dotenv`` dependency from ``require-dev`` to ``require`` in ``composer.json``:
+
+    .. code-block:: terminal
+
+        $ composer remove symfony/dotenv
+        $ composer require symfony/dotenv
 
 C) Install/Update your Vendors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Your vendors can be updated before transferring your source code (i.e.
 update the ``vendor/`` directory, then transfer that with your source
-code) or afterwards on the server. Either way, just update your vendors
+code) or afterwards on the server. Either way, update your vendors
 as you normally do:
 
 .. code-block:: terminal
@@ -156,7 +168,7 @@ as you normally do:
 .. caution::
 
     If you get a "class not found" error during this step, you may need to
-    run ``export SYMFONY_ENV=prod`` (or ``export APP_ENV=prod`` if you're
+    run ``export APP_ENV=prod`` (or ``export SYMFONY_ENV=prod`` if you're not
     using :doc:`Symfony Flex </setup/flex>`) before running this command so
     that the ``post-install-cmd`` scripts run in the ``prod`` environment.
 
@@ -167,18 +179,9 @@ Make sure you clear and warm-up your Symfony cache:
 
 .. code-block:: terminal
 
-    $ php bin/console cache:clear --env=prod --no-debug
+    $ APP_ENV=prod APP_DEBUG=0 php bin/console cache:clear
 
-E) Dump your Assetic Assets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If you're using Assetic, you'll also want to dump your assets:
-
-.. code-block:: terminal
-
-    $ php bin/console assetic:dump --env=prod --no-debug
-
-F) Other Things!
+E) Other Things!
 ~~~~~~~~~~~~~~~~
 
 There may be lots of other things that you need to do, depending on your
@@ -186,15 +189,15 @@ setup:
 
 * Running any database migrations
 * Clearing your APC cache
-* Running ``assets:install`` (already taken care of in ``composer install``)
 * Add/edit CRON jobs
+* :ref:`Building and minifying your assets <how-do-i-deploy-my-encore-assets>` with Webpack Encore
 * Pushing assets to a CDN
 * ...
 
 Application Lifecycle: Continuous Integration, QA, etc.
 -------------------------------------------------------
 
-While this entry covers the technical details of deploying, the full lifecycle
+While this article covers the technical details of deploying, the full lifecycle
 of taking code from development up to production may have more steps:
 deploying to staging, QA (Quality Assurance), running tests, etc.
 
@@ -214,7 +217,7 @@ Deployments not Using the ``composer.json`` File
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Symfony applications provide a ``kernel.project_dir`` parameter and a related
-:method:`Symfony\\Component\\HttpKernel\\Kernel\\Kernel::getProjectDir>` method.
+:method:`Symfony\\Component\\HttpKernel\\Kernel::getProjectDir` method.
 You can use this method to perform operations with file paths relative to your
 project's root directory. The logic to find that project root directory is based
 on the location of the main ``composer.json`` file.

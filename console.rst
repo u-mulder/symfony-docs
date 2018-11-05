@@ -69,6 +69,34 @@ method. Then you can optionally define a help message and the
         ;
     }
 
+The ``configure()`` method is called automatically at the end of the command
+constructor. If your command defines its own constructor, set the properties
+first and then call to the parent constructor, to make those properties
+available in the ``configure()`` method::
+
+    class CreateUserCommand extends Command
+    {
+        // ...
+
+        public function __construct(bool $requirePassword = false)
+        {
+            // best practices recommend to call the parent constructor first and
+            // then set your own properties. That wouldn't work in this case
+            // because configure() needs the properties set in this constructor
+            $this->requirePassword = $requirePassword;
+
+            parent::__construct();
+        }
+
+        public function configure()
+        {
+            $this
+                // ...
+                ->addArgument('password', $this->requirePassword ? InputArgument::OPTIONAL : InputArgument::REQUIRED, 'User password')
+            ;
+        }
+    }
+
 Registering the Command
 -----------------------
 
@@ -87,9 +115,13 @@ After configuring and registering the command, you can execute it in the termina
     $ php bin/console app:create-user
 
 As you might expect, this command will do nothing as you didn't write any logic
-yet. Add your own logic inside the ``execute()`` method, which has access to the
-input stream (e.g. options and arguments) and the output stream (to write
-messages to the console)::
+yet. Add your own logic inside the ``execute()`` method.
+
+Console Output
+--------------
+
+The ``execute()`` method has access to the output stream to write messages to
+the console::
 
     // ...
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -101,6 +133,10 @@ messages to the console)::
             '',
         ]);
 
+        // the value returned by someMethod() can be an iterator (https://secure.php.net/iterator)
+        // that generates and returns the messages with the 'yield' PHP keyword
+        $output->writeln($this->someMethod());
+
         // outputs a message followed by a "\n"
         $output->writeln('Whoa!');
 
@@ -108,6 +144,10 @@ messages to the console)::
         $output->write('You are about to ');
         $output->write('create a user.');
     }
+
+.. versionadded:: 4.1
+    The support of PHP iterators in the ``write()`` and ``writeln()`` methods
+    was introduced in Symfony 4.1.
 
 Now, try executing the command:
 
@@ -119,6 +159,57 @@ Now, try executing the command:
 
     Whoa!
     You are about to create a user.
+
+.. _console-output-sections:
+
+Output Sections
+~~~~~~~~~~~~~~~
+
+.. versionadded:: 4.1
+    Output sections were introduced in Symfony 4.1.
+
+The regular console output can be divided into multiple independent regions
+called "output sections". Create one or more of these sections when you need to
+clear and overwrite the output information.
+
+Sections are created with the
+:method:`Symfony\\Component\\Console\\Output\\ConsoleOutput::section` method,
+which returns an instance of
+:class:`Symfony\\Component\\Console\\Output\\ConsoleSectionOutput`::
+
+    class MyCommand extends Command
+    {
+        protected function execute(InputInterface $input, OutputInterface $output)
+        {
+            $section1 = $output->section();
+            $section2 = $output->section();
+            $section1->writeln('Hello');
+            $section2->writeln('World!');
+            // Output displays "Hello\nWorld!\n"
+
+            // overwrite() replaces all the existing section contents with the given content
+            $section1->overwrite('Goodbye');
+            // Output now displays "Goodbye\nWorld!\n"
+
+            // clear() deletes all the section contents...
+            $section2->clear();
+            // Output now displays "Goodbye\n"
+
+            // ...but you can also delete a given number of lines
+            // (this example deletes the last two lines of the section)
+            $section1->clear(2);
+            // Output is now completely empty!
+        }
+    }
+
+.. note::
+
+    A new line is appended automatically when displaying information in a section.
+
+Output sections let you manipulate the Console output in advanced ways, such as
+:ref:`displaying multiple progress bars <console-multiple-progress-bars>` which
+are updated independently and :ref:`appending rows to tables <console-modify-rendered-tables>`
+that have already been rendered.
 
 Console Input
 -------------
@@ -168,7 +259,7 @@ Now, you can pass the username to the command:
 Getting Services from the Service Container
 -------------------------------------------
 
-To actually create a new user, the command has to access to some
+To actually create a new user, the command has to access some
 :doc:`services </service_container>`. Since your command is already registered
 as a service, you can use normal dependency injection. Imagine you have a
 ``App\Service\UserManager`` service that you want to access::
@@ -244,10 +335,8 @@ console::
     {
         public function testExecute()
         {
-            $kernel = self::bootKernel();
+            $kernel = static::createKernel();
             $application = new Application($kernel);
-
-            $application->add(new CreateUserCommand());
 
             $command = $application->find('app:create-user');
             $commandTester = new CommandTester($command);
@@ -279,38 +368,6 @@ console::
     When using the Console component in a standalone project, use
     :class:`Symfony\\Component\\Console\\Application <Symfony\\Component\\Console\\Application>`
     and extend the normal ``\PHPUnit\Framework\TestCase``.
-
-To be able to use the fully set up service container for your console tests
-you can extend your test from
-:class:`Symfony\\Bundle\\FrameworkBundle\\Test\\KernelTestCase`::
-
-    // ...
-    use Symfony\Component\Console\Tester\CommandTester;
-    use Symfony\Bundle\FrameworkBundle\Console\Application;
-    use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-
-    class CreateUserCommandTest extends KernelTestCase
-    {
-        public function testExecute()
-        {
-            $kernel = static::createKernel();
-            $kernel->boot();
-
-            $application = new Application($kernel);
-
-            $command = $application->find('app:create-user');
-            $commandTester = new CommandTester($command);
-            $commandTester->execute(array(
-                'command'  => $command->getName(),
-                'username' => 'Wouter',
-            ));
-
-            $output = $commandTester->getDisplay();
-            $this->assertContains('Username: Wouter', $output);
-
-            // ...
-        }
-    }
 
 Learn More
 ----------

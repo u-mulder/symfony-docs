@@ -1,24 +1,29 @@
-Logging with Monolog
-====================
+Logging
+=======
 
-Symfony integrates seamlessly with `Monolog`_, the most popular PHP logging
-library, to create and store log messages in a variety of different places.
+Symfony comes with a minimalist `PSR-3`_ logger: :class:`Symfony\\Component\\HttpKernel\\Log\\Logger`.
+In conformance with `the twelve-factor app methodology`_, it sends messages starting from the
+``WARNING`` level to `stderr`_.
 
-Installation
-------------
+The minimal log level can be changed by setting the ``SHELL_VERBOSITY`` environment variable:
 
-In applications using :doc:`Symfony Flex </setup/flex>`, run this command to
-install the Monolog based logger before using it:
+=========================  =================
+``SHELL_VERBOSITY`` value  Minimum log level
+=========================  =================
+``-1``                     ``ERROR``
+``1``                      ``NOTICE``
+``2``                      ``INFO``
+``3``                      ``DEBUG``
+=========================  =================
 
-.. code-block:: terminal
-
-    $ composer require logger
+The minimum log level, the default output and the log format can also be changed by
+passing the appropriate arguments to the constructor of :class:`Symfony\\Component\\HttpKernel\\Log\\Logger`.
+To do so, :ref:`override the "logger" service definition <service-psr4-loader>`.
 
 Logging a Message
 -----------------
 
-If the application uses the :ref:`default services.yaml configuration <service-container-services-load-example>`,
-you can get the logger service injecting the ``LoggerInterface`` class::
+To log a message, inject the default logger in your controller::
 
     use Psr\Log\LoggerInterface;
 
@@ -35,11 +40,26 @@ you can get the logger service injecting the ``LoggerInterface`` class::
         // ...
     }
 
-The logger service has different methods for different logging levels/priorities.
-You can configure the logger to do different things based on the *level* of a message
-(e.g. :doc:`send an email when an error occurs </logging/monolog_email>`).
-
+The ``logger`` service has different methods for different logging levels/priorities.
 See LoggerInterface_ for a list of all of the methods on the logger.
+
+Monolog
+-------
+
+Symfony integrates seamlessly with `Monolog`_, the most popular PHP logging
+library, to create and store log messages in a variety of different places
+and trigger various actions.
+
+For instance, using Monolog you can configure the logger to do different things based on the
+*level* of a message (e.g. :doc:`send an email when an error occurs </logging/monolog_email>`).
+
+Run this command to install the Monolog based logger before using it:
+
+.. code-block:: terminal
+
+    $ composer require symfony/monolog-bundle
+
+The following sections assume that Monolog is installed.
 
 Where Logs are Stored
 ---------------------
@@ -74,7 +94,7 @@ to write logs using the :phpfunction:`syslog` function:
 
     .. code-block:: yaml
 
-        # config/packages/monolog.yaml
+        # config/packages/prod/monolog.yaml
         monolog:
             handlers:
                 # this "file_log" key could be anything
@@ -92,7 +112,7 @@ to write logs using the :phpfunction:`syslog` function:
 
     .. code-block:: xml
 
-        <!-- config/packages/monolog.xml -->
+        <!-- config/packages/prod/monolog.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <container xmlns="http://symfony.com/schema/dic/services"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -119,7 +139,7 @@ to write logs using the :phpfunction:`syslog` function:
 
     .. code-block:: php
 
-        // config/packages/monolog.php
+        // config/packages/prod/monolog.php
         $container->loadFromExtension('monolog', array(
             'handlers' => array(
                 'file_log' => array(
@@ -150,7 +170,7 @@ one of the messages reaches an ``action_level``. Take this example:
 
     .. code-block:: yaml
 
-        # config/packages/monolog.yaml
+        # config/packages/prod/monolog.yaml
         monolog:
             handlers:
                 filter_for_errors:
@@ -171,7 +191,7 @@ one of the messages reaches an ``action_level``. Take this example:
 
     .. code-block:: xml
 
-        <!-- config/packages/monolog.xml -->
+        <!-- config/packages/prod/monolog.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <container xmlns="http://symfony.com/schema/dic/services"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -204,7 +224,7 @@ one of the messages reaches an ``action_level``. Take this example:
 
     .. code-block:: php
 
-        // config/packages/monolog.php
+        // config/packages/prod/monolog.php
         $container->loadFromExtension('monolog', array(
             'handlers' => array(
                 'filter_for_errors' => array(
@@ -257,14 +277,14 @@ Linux command to rotate log files before they become too large.
 
 Another option is to have Monolog rotate the files for you by using the
 ``rotating_file`` handler. This handler creates a new log file every day
-and can also remove old files automatically. To use it, just set the ``type``
+and can also remove old files automatically. To use it, set the ``type``
 option of your handler to ``rotating_file``:
 
 .. configuration-block::
 
     .. code-block:: yaml
 
-        # config/packages/dev/monolog.yaml
+        # config/packages/prod/monolog.yaml
         monolog:
             handlers:
                 main:
@@ -277,7 +297,7 @@ option of your handler to ``rotating_file``:
 
     .. code-block:: xml
 
-        <!-- config/packages/dev/monolog.xml -->
+        <!-- config/packages/prod/monolog.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <container xmlns="http://symfony.com/schema/dic/services"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -301,7 +321,7 @@ option of your handler to ``rotating_file``:
 
     .. code-block:: php
 
-        // config/packages/dev/monolog.php
+        // config/packages/prod/monolog.php
         $container->loadFromExtension('monolog', array(
             'handlers' => array(
                 'main' => array(
@@ -341,9 +361,17 @@ Learn more
     logging/channels_handlers
     logging/formatter
     logging/processors
-    logging/monolog_regex_based_excludes
+    logging/monolog_exclude_http_codes
     logging/monolog_console
 
+.. toctree::
+    :hidden:
+
+    logging/monolog_regex_based_excludes
+
+.. _`the twelve-factor app methodology`: https://12factor.net/logs
+.. _PSR-3: https://www.php-fig.org/psr/psr-3/
+.. _`stderr`: https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)
 .. _Monolog: https://github.com/Seldaek/monolog
 .. _LoggerInterface: https://github.com/php-fig/log/blob/master/Psr/Log/LoggerInterface.php
 .. _`logrotate`: https://github.com/logrotate/logrotate

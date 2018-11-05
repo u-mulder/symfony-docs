@@ -13,7 +13,7 @@ Installation
 
 .. code-block:: terminal
 
-    $ composer require symfony/dotenv
+    $ composer require --dev symfony/dotenv
 
 Alternatively, you can clone the `<https://github.com/symfony/dotenv>`_ repository.
 
@@ -58,16 +58,25 @@ Access the value with ``getenv()`` in your code::
     $dbUser = getenv('DB_USER');
     // you can also use ``$_ENV`` or ``$_SERVER``
 
-.. note::
+The ``load()`` method never overwrites existing environment variables. Use the
+``overload()`` method if you need to overwrite them::
 
-    Symfony Dotenv never overwrites existing environment variables.
+    // ...
+    $dotenv->overload(__DIR__.'/.env');
+
+.. versionadded:: 4.2
+    The ``Dotenv::overload()`` method was introduced in Symfony 4.2.
 
 You should never store a ``.env`` file in your code repository as it might
 contain sensitive information; create a ``.env.dist`` file with sensible
 defaults instead.
 
-Symfony Dotenv should only be used in development/testing/staging environments.
-For production environments, use "real" environment variables.
+.. note::
+
+    Symfony Dotenv can be used in any environment of your application:
+    development, testing, staging and even production. However, in production
+    it's recommended to configure real environment variables to avoid the
+    performance overhead of parsing the ``.env`` file for every request.
 
 As a ``.env`` file is a regular shell script, you can ``source`` it in your own
 shell scripts:

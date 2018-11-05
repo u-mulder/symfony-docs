@@ -29,7 +29,15 @@ command:
 
 .. code-block:: terminal
 
-    $ ./vendor/bin/simple-phpunit
+    $ ./bin/phpunit
+
+.. note::
+
+    The ``./bin/phpunit`` command is created by :doc:`Symfony Flex </setup/flex>`
+    when installing the ``phpunit-bridge`` package. If the command is missing, you
+    can remove the package (``composer remove symfony/phpunit-bridge``) and install
+    it again. Another solution is to remove the project's ``symfony.lock`` file and
+    run ``composer install`` to force the execution of all Symfony Flex recipes.
 
 PHPUnit is configured by the ``phpunit.xml.dist`` file in the root of your
 Symfony application.
@@ -47,7 +55,7 @@ Unit Tests
 
 A unit test is a test against a single PHP class, also called a *unit*. If you
 want to test the overall behavior of your application, see the section about
-`Functional Tests`_.
+:ref:`Functional Tests <functional-tests>`.
 
 Writing Symfony unit tests is no different from writing standard PHPUnit
 unit tests. Suppose, for example, that you have an *incredibly* simple class
@@ -96,21 +104,23 @@ Just like in your real application - autoloading is automatically enabled
 via the ``vendor/autoload.php`` file (as configured by default in the
 ``phpunit.xml.dist`` file).
 
-Running tests for a given file or directory is also very easy:
+You can also limit a test run to a directory or a specific test file:
 
 .. code-block:: terminal
 
     # run all tests of the application
-    $ ./vendor/bin/simple-phpunit
+    $ ./bin/phpunit
 
     # run all tests in the Util/ directory
-    $ ./vendor/bin/simple-phpunit tests/Util
+    $ ./bin/phpunit tests/Util
 
     # run tests for the Calculator class
-    $ ./vendor/bin/simple-phpunit tests/Util/CalculatorTest.php
+    $ ./bin/phpunit tests/Util/CalculatorTest.php
 
 .. index::
    single: Tests; Functional tests
+
+.. _functional-tests:
 
 Functional Tests
 ----------------
@@ -120,10 +130,16 @@ application (from the routing to the views). They are no different from unit
 tests as far as PHPUnit is concerned, but they have a very specific workflow:
 
 * Make a request;
-* Test the response;
 * Click on a link or submit a form;
 * Test the response;
 * Rinse and repeat.
+
+Before creating your first test, install these packages that provide some of the
+utilities used in the functional tests:
+
+.. code-block:: terminal
+
+    $ composer require --dev symfony/browser-kit symfony/css-selector
 
 Your First Functional Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,9 +148,9 @@ First, install the BrowserKit component in your project:
 
 .. code-block:: terminal
 
-    $ composer require --dev browser-kit
+    $ composer require --dev symfony/browser-kit
 
-Functional tests are simple PHP files that typically live in the ``tests/Controller``
+Functional tests are PHP files that typically live in the ``tests/Controller``
 directory for your bundle. If you want to test the pages handled by your
 ``PostController`` class, start by creating a new ``PostControllerTest.php``
 file that extends a special ``WebTestCase`` class.
@@ -203,7 +219,7 @@ component, run:
 
 .. code-block:: terminal
 
-    $ composer require --dev css-selector
+    $ composer require --dev symfony/css-selector
 
 Now you can use CSS selectors with the crawler. To assert that the phrase
 "Hello World" is on the page at least once, you can use this assertion::
@@ -260,6 +276,15 @@ document::
         $client->getResponse()->getContent()
     );
 
+.. tip::
+
+    Instead of installing each testing dependency individually, you can use the
+    Symfony Test pack to install all those dependencies at once:
+
+    .. code-block:: terminal
+
+        $ composer require --dev symfony/test-pack
+
 .. index::
    single: Tests; Assertions
 
@@ -315,6 +340,41 @@ document::
         // ...or simply check that the response is a redirect to any URL
         $this->assertTrue($client->getResponse()->isRedirect());
 
+.. _testing-data-providers:
+
+Testing against Different Sets of Data
+--------------------------------------
+
+It's common to have to execute the same test against different sets of data to
+check the multiple conditions code must handle. This is solved with PHPUnit's
+`data providers`_, which work both for unit and functional tests.
+
+First, add one or more arguments to your test method and use them inside the
+test code. Then, define another method which returns a nested array with the
+arguments to use on each test run. Lastly, add the ``@dataProvider`` annotation
+to associate both methods::
+
+    /**
+     * @dataProvider provideUrls
+     */
+    public function testPageIsSuccessful($url)
+    {
+        $client = self::createClient();
+        $client->request('GET', $url);
+
+        $this->assertTrue($client->getResponse()->isSuccessful());
+    }
+
+    public function provideUrls()
+    {
+        return array(
+            array('/'),
+            array('/blog'),
+            array('/contact'),
+            // ...
+        );
+    }
+
 .. index::
    single: Tests; Client
 
@@ -352,8 +412,8 @@ returns a ``Crawler`` instance.
         )
 
     The ``server`` array is the raw values that you'd expect to normally
-    find in the PHP `$_SERVER`_ superglobal. For example, to set the ``Content-Type``,
-    ``Referer`` and ``X-Requested-With`` HTTP headers, you'd pass the following (mind
+    find in the PHP `$_SERVER`_ superglobal. For example, to set the
+    ``Content-Type`` and ``Referer`` HTTP headers, you'd pass the following (mind
     the ``HTTP_`` prefix for non standard headers)::
 
         $client->request(
@@ -362,30 +422,25 @@ returns a ``Crawler`` instance.
             array(),
             array(),
             array(
-                'CONTENT_TYPE'          => 'application/json',
-                'HTTP_REFERER'          => '/foo/bar',
-                'HTTP_X-Requested-With' => 'XMLHttpRequest',
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_REFERER' => '/foo/bar',
             )
         );
 
 Use the crawler to find DOM elements in the response. These elements can then
 be used to click on links and submit forms::
 
-    $link = $crawler->selectLink('Go elsewhere...')->link();
-    $crawler = $client->click($link);
+    $crawler = $client->clickLink('Go elsewhere...');
 
-    $form = $crawler->selectButton('validate')->form();
-    $crawler = $client->submit($form, array('name' => 'Fabien'));
+    $crawler = $client->submitForm('validate', array('name' => 'Fabien'));
 
-The ``click()`` and ``submit()`` methods both return a ``Crawler`` object.
+The ``clickLink()`` and ``submitForm()`` methods both return a ``Crawler`` object.
 These methods are the best way to browse your application as it takes care
 of a lot of things for you, like detecting the HTTP method from a form and
 giving you a nice API for uploading files.
 
-.. tip::
-
-    You will learn more about the ``Link`` and ``Form`` objects in the
-    :ref:`Crawler <testing-crawler>` section below.
+.. versionadded:: 4.2
+    The ``clickLink()`` and ``submitForm()`` methods were introduced in Symfony 4.2.
 
 The ``request()`` method can also be used to simulate form submissions directly
 or perform more complex requests. Some useful examples::
@@ -410,7 +465,7 @@ or perform more complex requests. Some useful examples::
         '/path/to/photo.jpg',
         'photo.jpg',
         'image/jpeg',
-        123
+        null
     );
     $client->request(
         'POST',
@@ -433,6 +488,19 @@ process to avoid any side-effects when working with several clients in the same
 script::
 
     $client->insulate();
+
+AJAX Requests
+~~~~~~~~~~~~~
+
+The Client provides a :method:`Symfony\\Component\\BrowserKit\\Client::xmlHttpRequest`
+method, which has the same arguments as the ``request()`` method, and it's a
+shortcut to make AJAX requests::
+
+    // the required HTTP_X_REQUESTED_WITH header is added automatically
+    $client->xmlHttpRequest('POST', '/submit', array('name' => 'Fabien'));
+
+.. versionadded:: 4.1
+    The ``xmlHttpRequest()`` method was introduced in Symfony 4.1.
 
 Browsing
 ~~~~~~~~
@@ -479,17 +547,27 @@ You can also get the objects related to the latest request::
 Accessing the Container
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-It's highly recommended that a functional test only tests the response. But
-under certain very rare circumstances, you might want to access some internal
-objects to write assertions. In such cases, you can access the Dependency
-Injection Container::
+.. versionadded:: 4.1
+    The ``self::$container`` property was introduced in Symfony 4.1.
 
-    // will be the same container used in your test, unless you're using
+It's highly recommended that a functional test only tests the response. But
+under certain very rare circumstances, you might want to access some services
+to write assertions. Given that services are private by default, test classes
+define a property that stores a special container created by Symfony which
+allows fetching both public and all non-removed private services::
+
+    // gives access to the same services used in your test, unless you're using
     // $client->insulate() or using real HTTP requests to test your application
-    $container = $client->getContainer();
+    $container = self::$container;
 
 For a list of services available in your application, use the ``debug:container``
 command.
+
+.. tip::
+
+    The special container that gives access to private services exists only in
+    the ``test`` environment and is itself a service that you can get from the
+    real container using the ``test.service_container`` id.
 
 .. tip::
 
@@ -535,6 +613,19 @@ If you pass ``false`` to the ``followRedirects()`` method, the redirects
 will no longer be followed::
 
     $client->followRedirects(false);
+
+Reporting Exceptions
+~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 3.4
+    The ``catchExceptions()`` method was introduced in Symfony 3.4.
+
+Debugging exceptions in functional tests may be difficult because by default
+they are caught and you need to look at the logs to see which exception was
+thrown. Disabling catching of exceptions in the test client allows the exception
+to be reported by PHPUnit::
+
+    $client->catchExceptions(false);
 
 .. index::
    single: Tests; Crawler
@@ -628,31 +719,39 @@ The Crawler can extract information from the nodes::
 Links
 ~~~~~
 
-To select links, you can use the traversing methods above or the convenient
-``selectLink()`` shortcut::
+Use the ``clickLink()`` method to click on the first link that contains the
+given text (or the first clickable image with that ``alt`` attribute)::
 
-    $crawler->selectLink('Click here');
+    $client = static::createClient();
+    $client->request('GET', '/post/hello-world');
 
-This selects all links that contain the given text, or clickable images for
-which the ``alt`` attribute contains the given text. Like the other filtering
-methods, this returns another ``Crawler`` object.
+    $client->clickLink('Click here');
 
-Once you've selected a link, you have access to a special ``Link`` object,
-which has helpful methods specific to links (such as ``getMethod()`` and
-``getUri()``). To click on the link, use the Client's ``click()`` method
-and pass it a ``Link`` object::
+If you need access to the :class:`Symfony\\Component\\DomCrawler\\Link` object
+that provides helpful methods specific to links (such as ``getMethod()`` and
+``getUri()``), use the ``selectLink()`` method instead:
+
+    $client = static::createClient();
+    $crawler = $client->request('GET', '/post/hello-world');
 
     $link = $crawler->selectLink('Click here')->link();
-
     $client->click($link);
 
 Forms
 ~~~~~
 
-Forms can be selected using their buttons, which can be selected with the
-``selectButton()`` method, just like links::
+Use the ``submitForm()`` method to submit the form that contains the given button::
 
-    $buttonCrawlerNode = $crawler->selectButton('submit');
+    $client = static::createClient();
+    $client->request('GET', '/post/hello-world');
+
+    $crawler = $client->submitForm('Add comment', array(
+       'comment_form[content]' => '...',
+    ));
+
+The first argument of ``submitForm()`` is the text content, ``id``, ``value`` or
+``name`` of any ``<button>`` or ``<input type="submit">`` included in the form.
+The second optional argument is used to override the default form field values.
 
 .. note::
 
@@ -660,48 +759,43 @@ Forms can be selected using their buttons, which can be selected with the
     buttons; if you use the traversing API, keep in mind that you must look for a
     button.
 
-The ``selectButton()`` method can select ``button`` tags and submit ``input``
-tags. It uses several parts of the buttons to find them:
+If you need access to the :class:`Symfony\\Component\\DomCrawler\\Form` object
+that provides helpful methods specific to forms (such as ``getUri()``,
+``getValues()`` and ``getFields()``) use the ``selectButton()`` method instead::
 
-* The ``value`` attribute value;
-* The ``id`` or ``alt`` attribute value for images;
-* The ``id`` or ``name`` attribute value for ``button`` tags.
+    $client = static::createClient();
+    $crawler = $client->request('GET', '/post/hello-world');
 
-Once you have a Crawler representing a button, call the ``form()`` method
-to get a ``Form`` instance for the form wrapping the button node::
+    $buttonCrawlerNode = $crawler->selectButton('submit');
 
+    // select the form that contains this button
     $form = $buttonCrawlerNode->form();
 
-When calling the ``form()`` method, you can also pass an array of field values
-that overrides the default ones::
-
+    // you can also pass an array of field values that overrides the default ones
     $form = $buttonCrawlerNode->form(array(
-        'name'              => 'Fabien',
-        'my_form[subject]'  => 'Symfony rocks!',
+        'my_form[name]'    => 'Fabien',
+        'my_form[subject]' => 'Symfony rocks!',
     ));
 
-And if you want to simulate a specific HTTP method for the form, pass it as a
-second argument::
-
+    // you can pass a second argument to override the form HTTP method
     $form = $buttonCrawlerNode->form(array(), 'DELETE');
 
-The Client can submit ``Form`` instances::
-
+    // submit the Form object
     $client->submit($form);
 
 The field values can also be passed as a second argument of the ``submit()``
 method::
 
     $client->submit($form, array(
-        'name'              => 'Fabien',
-        'my_form[subject]'  => 'Symfony rocks!',
+        'my_form[name]'    => 'Fabien',
+        'my_form[subject]' => 'Symfony rocks!',
     ));
 
 For more complex situations, use the ``Form`` instance as an array to set the
 value of each field individually::
 
     // changes the value of a field
-    $form['name'] = 'Fabien';
+    $form['my_form[name]'] = 'Fabien';
     $form['my_form[subject]'] = 'Symfony rocks!';
 
 There is also a nice API to manipulate the values of the fields according to
@@ -729,6 +823,17 @@ their type::
     ``getPhpFiles()`` methods also return the submitted values, but in the
     PHP format (it converts the keys with square brackets notation - e.g.
     ``my_form[subject]`` - to PHP arrays).
+
+.. tip::
+
+    The ``submit()`` and ``submitForm()`` methods define optional arguments to
+    add custom server parameters and HTTP headers when submitting the form::
+
+        $client->submit($form, array(), array('HTTP_ACCEPT_LANGUAGE' => 'es'));
+        $client->submitForm($button, array(), 'POST', array('HTTP_ACCEPT_LANGUAGE' => 'es'));
+
+    .. versionadded:: 4.1
+        The feature to add custom HTTP headers was introduced in Symfony 4.1.
 
 Adding and Removing Forms to a Collection
 .........................................
@@ -888,7 +993,7 @@ as configured in the ``phpunit.xml.dist`` file:
         <!-- ... -->
     </phpunit>
 
-But you can easily add more directories. For instance, the following
+But you can add more directories. For instance, the following
 configuration adds tests from a custom ``lib/tests`` directory:
 
 .. code-block:: xml
@@ -941,6 +1046,7 @@ Learn more
 * :doc:`/components/css_selector`
 
 .. _`PHPUnit`: https://phpunit.de/
-.. _`documentation`: https://phpunit.de/manual/current/en/
+.. _`documentation`: https://phpunit.readthedocs.io/
 .. _`PHPUnit Bridge component`: https://symfony.com/components/PHPUnit%20Bridge
 .. _`$_SERVER`: https://php.net/manual/en/reserved.variables.server.php
+.. _`data providers`: https://phpunit.de/manual/current/en/writing-tests-for-phpunit.html#writing-tests-for-phpunit.data-providers

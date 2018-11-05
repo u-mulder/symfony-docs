@@ -19,7 +19,7 @@ An Autowiring Example
 ---------------------
 
 Imagine you're building an API to publish statuses on a Twitter feed, obfuscated
-with `ROT13`_... a fun encoder that shifts all characters 13 letters forward in
+with `ROT13`_, a fun encoder that shifts all characters 13 letters forward in
 the alphabet.
 
 Start by creating a ROT13 transformer class::
@@ -125,13 +125,13 @@ Now, you can use the ``TwitterClient`` service immediately in a controller::
     namespace App\Controller;
 
     use App\Service\TwitterClient;
-    use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
     use Symfony\Component\Routing\Annotation\Route;
 
-    class DefaultController extends Controller
+    class DefaultController extends AbstractController
     {
         /**
-         * @Route("/tweet")
+         * @Route("/tweet", methods={"POST"})
          */
         public function tweet()
         {
@@ -358,9 +358,10 @@ Suppose you create a second class - ``UppercaseTransformer`` that implements
     }
 
 If you register this as a service, you now have *two* services that implement the
-``App\Util\TransformerInterface`` type. Symfony doesn't know which one should
-be used for autowiring, so you need to choose one by creating an alias from the type
-to the correct service id (see :ref:`autowiring-interface-alias`).
+``App\Util\TransformerInterface`` type. Autowiring subsystem can not decide
+which one to use. Remember, autowiring isn't magic; it simply looks for a service
+whose id matches the type-hint. So you need to choose one by creating an alias
+from the type to the correct service id (see :ref:`autowiring-interface-alias`).
 
 If you want ``Rot13Transformer`` to be the service that's used for autowiring, create
 that alias:

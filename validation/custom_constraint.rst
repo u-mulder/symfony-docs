@@ -45,7 +45,7 @@ includes some simple default logic::
     // in the base Symfony\Component\Validator\Constraint class
     public function validatedBy()
     {
-        return get_class($this).'Validator';
+        return \get_class($this).'Validator';
     }
 
 In other words, if you create a custom ``Constraint`` (e.g. ``MyConstraint``),
@@ -59,11 +59,22 @@ The validator class is also simple, and only has one required method ``validate(
 
     use Symfony\Component\Validator\Constraint;
     use Symfony\Component\Validator\ConstraintValidator;
+    use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
     class ContainsAlphanumericValidator extends ConstraintValidator
     {
         public function validate($value, Constraint $constraint)
         {
+            // custom constraints should ignore null and empty values to allow
+            // other constraints (NotBlank, NotNull, etc.) take care of that
+            if (null === $value || '' === $value) {
+                return;
+            }
+
+            if (!is_string($value)) {
+                throw new UnexpectedTypeException($value, 'string');
+            }
+
             if (!preg_match('/^[a-zA-Z0-9]+$/', $value, $matches)) {
                 $this->context->buildViolation($constraint->message)
                     ->setParameter('{{ string }}', $value)
@@ -82,7 +93,7 @@ The ``addViolation()`` method call finally adds the violation to the context.
 Using the new Validator
 -----------------------
 
-Using custom validators is very easy, just as the ones provided by Symfony itself:
+Using custom validators looks the same as using the ones provided by Symfony itself:
 
 .. configuration-block::
 
@@ -184,6 +195,12 @@ With this, the validator ``validate()`` method gets an object as its first argum
             }
         }
     }
+
+.. tip::
+
+    The ``atPath()`` method defines the property which the validation error is
+    associated to. Use any :doc:`valid PropertyAccess syntax </components/property_access>`
+    to define that property.
 
 Note that a class constraint validator is applied to the class itself, and
 not to the property:

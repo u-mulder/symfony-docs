@@ -634,6 +634,52 @@ let you find out which options are defined::
         }
     }
 
+Deprecating the Option
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 4.2
+    The ``setDeprecated()`` method was introduced in Symfony 4.2.
+
+Once an option is outdated or you decided not to maintain it anymore, you can
+deprecate it using the :method:`Symfony\\Component\\OptionsResolver\\OptionsResolver::setDeprecated`
+method::
+
+    $resolver
+        ->setDefined(array('hostname', 'host'))
+        // this outputs the following generic deprecation message:
+        // The option "hostname" is deprecated.
+        ->setDeprecated('hostname')
+
+        // you can also pass a custom deprecation message
+        ->setDeprecated('hostname', 'The option "hostname" is deprecated, use "host" instead.')
+    ;
+
+Instead of passing the message, you may also pass a closure which returns
+a string (the deprecation message) or an empty string to ignore the deprecation.
+This closure is useful to only deprecate some of the allowed types or values of
+the option::
+
+    $resolver
+        ->setDefault('encryption', null)
+        ->setDefault('port', null)
+        ->setAllowedTypes('port', array('null', 'int'))
+        ->setDeprecated('port', function (Options $options, $value) {
+            if (null === $value) {
+                return 'Passing "null" to option "port" is deprecated, pass an integer instead.';
+            }
+
+            // deprecation may also depend on another option
+            if ('ssl' === $options['encryption'] && 456 !== $value) {
+                return 'Passing a different port than "456" when the "encryption" option is set to "ssl" is deprecated.';
+            }
+
+            return '';
+        })
+    ;
+
+This closure receives as argument the value of the option after validating it
+and before normalizing it when the option is being resolved.
+
 Performance Tweaks
 ~~~~~~~~~~~~~~~~~~
 
@@ -689,7 +735,7 @@ method ``clearOptionsConfig()`` and call it periodically::
         // ...
     }
 
-That's it! You now have all the tools and knowledge needed to easily process
+That's it! You now have all the tools and knowledge needed to process
 options in your code.
 
 .. _Packagist: https://packagist.org/packages/symfony/options-resolver

@@ -17,7 +17,7 @@ it is broken down.
         # config/packages/prod/monolog.yaml
         monolog:
             handlers:
-                mail:
+                main:
                     type:         fingers_crossed
                     # 500 errors are logged at the critical level
                     action_level: critical
@@ -60,7 +60,7 @@ it is broken down.
                 <monolog:excluded-404>^/</monolog:excluded-404>
                 -->
                 <monolog:handler
-                    name="mail"
+                    name="main"
                     type="fingers_crossed"
                     action-level="critical"
                     handler="deduplicated"
@@ -96,7 +96,7 @@ it is broken down.
         // config/packages/prod/monolog.php
         $container->loadFromExtension('monolog', array(
             'handlers' => array(
-                'mail' => array(
+                'main' => array(
                     'type'         => 'fingers_crossed',
                     // 500 errors are logged at the critical level
                     'action_level' => 'critical',
@@ -125,7 +125,7 @@ it is broken down.
             ),
         ));
 
-The ``mail`` handler is a ``fingers_crossed`` handler which means that
+The ``main`` handler is a ``fingers_crossed`` handler which means that
 it is only triggered when the action level, in this case ``critical`` is reached.
 The ``critical`` level is only triggered for 5xx HTTP code errors. If this level
 is reached once, the ``fingers_crossed`` handler will log all messages
@@ -138,10 +138,10 @@ is then passed onto the ``deduplicated`` handler.
     set the ``action_level`` to ``error`` instead of ``critical``. See the
     code above for an example.
 
-The ``deduplicated`` handler simply keeps all the messages for a request and
+The ``deduplicated`` handler keeps all the messages for a request and
 then passes them onto the nested handler in one go, but only if the records are
 unique over a given period of time (60 seconds by default). If the records are
-duplicates they are simply discarded. Adding this handler reduces the amount of
+duplicates they are discarded. Adding this handler reduces the amount of
 notifications to a manageable level, specially in critical failure scenarios.
 You can adjust the time period using the ``time`` option:
 

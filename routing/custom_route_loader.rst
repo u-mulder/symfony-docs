@@ -73,14 +73,14 @@ and configure the service and method to call:
 
     .. code-block:: yaml
 
-        # app/config/routing.yml
+        # config/routes.yaml
         admin_routes:
             resource: 'admin_route_loader:loadRoutes'
             type: service
 
     .. code-block:: xml
 
-        <!-- app/config/routing.xml -->
+        <!-- config/routes.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
         <routes xmlns="http://symfony.com/schema/routing"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -92,7 +92,7 @@ and configure the service and method to call:
 
     .. code-block:: php
 
-        // app/config/routing.php
+        // config/routes.php
         use Symfony\Component\Routing\RouteCollection;
 
         $routes = new RouteCollection();
@@ -120,7 +120,7 @@ In most cases it is easier to extend from
 
 The sample loader below supports loading routing resources with a type of
 ``extra``. The type name should not clash with other loaders that might
-support the same type of resource. Just make up a name specific to what
+support the same type of resource. Make up any name specific to what
 you do. The resource name itself is not actually used in the example::
 
     // src/Routing/ExtraLoader.php
@@ -174,9 +174,9 @@ have to create an ``extra()`` method in the ``ExtraController``::
     namespace App\Controller;
 
     use Symfony\Component\HttpFoundation\Response;
-    use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-    class ExtraController extends Controller
+    class ExtraController extends AbstractController
     {
         public function extra($parameter)
         {
@@ -287,7 +287,7 @@ can also make use of the provided resolver, an instance of
 :class:`Symfony\\Component\\Config\\Loader\\LoaderResolver`, to load secondary
 routing resources.
 
-Of course you still need to implement
+You still need to implement
 :method:`Symfony\\Component\\Config\\Loader\\LoaderInterface::supports`
 and :method:`Symfony\\Component\\Config\\Loader\\LoaderInterface::load`.
 Whenever you want to load another resource - for instance a YAML routing
@@ -306,7 +306,7 @@ configuration file - you can call the
         {
             $routes = new RouteCollection();
 
-            $resource = '@ThirdPartyBundle/Resources/config/routing.yaml';
+            $resource = '@ThirdPartyBundle/Resources/config/routes.yaml';
             $type = 'yaml';
 
             $importedRoutes = $this->import($resource, $type);

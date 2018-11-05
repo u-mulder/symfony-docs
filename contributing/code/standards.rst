@@ -192,17 +192,21 @@ Structure
 * Do not use ``else``, ``elseif``, ``break`` after ``if`` and ``case`` conditions
   which return or throw something;
 
-* Do not use spaces around ``[`` offset accessor and before ``]`` offset accessor.
+* Do not use spaces around ``[`` offset accessor and before ``]`` offset accessor;
+
+* Add a ``use`` statement for every class that is not part of the global namespace.
 
 Naming Conventions
 ~~~~~~~~~~~~~~~~~~
 
-* Use camelCase, not underscores, for variable, function and method
-  names, arguments;
+* Use `camelCase`_ for PHP variables, function and method names, arguments
+  (e.g. ``$acceptableContentTypes``, ``hasSession()``);
 
-* Use underscores for configuration options and parameters;
+* Use `snake_case`_ for configuration parameters and Twig template variables
+  (e.g. ``framework.csrf_protection``, ``http_status_code``);
 
-* Use namespaces for all classes;
+* Use namespaces for all PHP classes and `UpperCamelCase`_ for their names (e.g.
+  ``ConsoleLogger``);
 
 * Prefix all abstract classes with ``Abstract`` except PHPUnit ``*TestCase``.
   Please note some early Symfony classes do not follow this convention and
@@ -215,7 +219,9 @@ Naming Conventions
 
 * Suffix exceptions with ``Exception``;
 
-* Use alphanumeric characters and underscores for file names;
+* Use UpperCamelCase for naming PHP files (e.g. ``EnvVarProcessor.php``) and
+  snake case for naming Twig templates and web assets (``section_layout.html.twig``,
+  ``index.scss``);
 
 * For type-hinting in PHPDocs and casting, use ``bool`` (instead of ``boolean``
   or ``Boolean``), ``int`` (instead of ``integer``), ``float`` (instead of
@@ -258,7 +264,12 @@ Documentation
 * The ``@package`` and ``@subpackage`` annotations are not used;
 
 * Don't inline PHPDoc blocks, even when they contain just one tag (e.g. don't
-  put ``/** {@inheritdoc} */`` in a single line).
+  put ``/** {@inheritdoc} */`` in a single line);
+
+* When adding a new class or when making significant changes to an existing class,
+  an ``@author`` tag with personal contact information may be added, or expanded.
+  Please note it is possible to have the personal contact information updated or
+  removed per request to the doc:`core team </contributing/code/core_team>`.
 
 License
 ~~~~~~~
@@ -273,3 +284,6 @@ License
 .. _`PSR-4`: https://www.php-fig.org/psr/psr-4/
 .. _`identical comparison`: https://php.net/manual/en/language.operators.comparison.php
 .. _`Yoda conditions`: https://en.wikipedia.org/wiki/Yoda_conditions
+.. _`camelCase`: https://en.wikipedia.org/wiki/Camel_case
+.. _`UpperCamelCase`: https://en.wikipedia.org/wiki/Camel_case
+.. _`snake_case`: https://en.wikipedia.org/wiki/Snake_case

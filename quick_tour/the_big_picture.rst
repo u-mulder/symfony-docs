@@ -59,7 +59,7 @@ Try your new app by going to ``http://localhost:8000`` in a browser!
 Fundamentals: Route, Controller, Response
 -----------------------------------------
 
-Our project only has about 15 files, but it's ready to become an sleek API, a robust
+Our project only has about 15 files, but it's ready to become a sleek API, a robust
 web app, or a microservice. Symfony starts small, but scales with you.
 
 But before we go too far, let's dig into the fundamentals by building our first page.
@@ -69,6 +69,7 @@ page. Uncomment the example that already lives in the file:
 
 .. code-block:: yaml
 
+    # config/routes.yaml
     index:
         path: /
         controller: 'App\Controller\DefaultController::index'
@@ -80,6 +81,7 @@ doesn't exist yet, so let's create it!
 In ``src/Controller``, create a new ``DefaultController`` class and an ``index``
 method inside::
 
+    // src/Controller/DefaultController.php
     namespace App\Controller;
 
     use Symfony\Component\HttpFoundation\Response;
@@ -115,13 +117,18 @@ like a wildcard that matches anything. And it gets better! Update the controller
 .. code-block:: diff
 
     // src/Controller/DefaultController.php
-    // ...
+    namespace App\Controller;
 
-    - public function index()
-    + public function index($name)
+    use Symfony\Component\HttpFoundation\Response;
+
+    class DefaultController
     {
-    -     return new Response('Hello!');
-    +     return new Response("Hello $name!");
+    -     public function index()
+    +     public function index($name)
+        {
+    -         return new Response('Hello!');
+    +         return new Response("Hello $name!");
+        }
     }
 
 Try the page out by going to ``http://localhost:8000/hello/Symfony``. You should
@@ -148,28 +155,42 @@ Instead, add the route *right above* the controller method:
 .. code-block:: diff
 
     // src/Controller/DefaultController.php
-    // ...
+    namespace App\Controller;
 
+    use Symfony\Component\HttpFoundation\Response;
     + use Symfony\Component\Routing\Annotation\Route;
 
-    + /**
-    +  * @Route("/hello/{name}")
-    +  */
-    public function index($name)
+    class DefaultController
+    {
+    +    /**
+    +     * @Route("/hello/{name}")
+    +     */
+         public function index($name) {
+             // ...
+         }
+    }
 
 This works just like before! But by using annotations, the route and controller
-live right next to each other. Need another page? Just add another route and method
+live right next to each other. Need another page? Add another route and method
 in ``DefaultController``::
 
     // src/Controller/DefaultController.php
-    // ...
+    namespace App\Controller;
 
-    /**
-     * @Route("/simplicity")
-     */
-    public function simple()
+    use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\Routing\Annotation\Route;
+
+    class DefaultController
     {
-        return new Response('Simple! Easy! Great!');
+        // ...
+
+        /**
+         * @Route("/simplicity")
+         */
+        public function simple()
+        {
+            return new Response('Simple! Easy! Great!');
+        }
     }
 
 Routing can do *even* more, but we'll save that for another time! Right now, our

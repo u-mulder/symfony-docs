@@ -5,7 +5,7 @@ How to Override Symfony's default Directory Structure
 =====================================================
 
 Symfony automatically ships with a default directory structure. You can
-easily override this directory structure to create your own. The default
+override this directory structure to create your own. The default
 directory structure is:
 
 .. code-block:: text
@@ -126,6 +126,54 @@ own templates directory (or directories):
         $container->loadFromExtension('twig', array(
             'paths' => array(
                 '%kernel.project_dir%/resources/views',
+            ),
+        ));
+
+Override the Translations Directory
+-----------------------------------
+
+If your translation files are not stored in the default ``translations/``
+directory, use the :ref:`framework.translator.paths <reference-translator-paths>`
+configuration option to define your own translations directory (or directories):
+
+.. configuration-block::
+
+    .. code-block:: yaml
+
+        # config/packages/translation.yaml
+        framework:
+            translator:
+                # ...
+                paths: ["%kernel.project_dir%/i18n"]
+
+    .. code-block:: xml
+
+        <!-- config/packages/translation.xml -->
+        <?xml version="1.0" ?>
+        <container xmlns="http://symfony.com/schema/dic/services"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:twig="http://symfony.com/schema/dic/twig"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/twig
+                http://symfony.com/schema/dic/twig/twig-1.0.xsd">
+
+            <framework:config>
+                <framework:translator>
+                    <framework:path>%kernel.project_dir%/i18n</framework:path>
+                </framework:translator>
+            </framework:config>
+
+        </container>
+
+    .. code-block:: php
+
+        // config/packages/translation.php
+        $container->loadFromExtension('framework', array(
+            'translator' => array(
+                'paths' => array(
+                    '%kernel.project_dir%/i18n',
+                ),
             ),
         ));
 

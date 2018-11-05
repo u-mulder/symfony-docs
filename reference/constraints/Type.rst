@@ -125,6 +125,7 @@ datatypes as determined by PHP's ``is_()`` functions.
 * :phpfunction:`double <is_double>`
 * :phpfunction:`int <is_int>`
 * :phpfunction:`integer <is_integer>`
+* :phpfunction:`iterable <is_iterable>`
 * :phpfunction:`long <is_long>`
 * :phpfunction:`null <is_null>`
 * :phpfunction:`numeric <is_numeric>`
@@ -158,6 +159,16 @@ message
 **type**: ``string`` **default**: ``This value should be of type {{ type }}.``
 
 The message if the underlying data is not of the given type.
+
+You can use the following parameters in this message:
+
++-----------------+-----------------------------+
+| Parameter       | Description                 |
++=================+=============================+
+| ``{{ value }}`` | The current (invalid) value |
++-----------------+-----------------------------+
+| ``{{ type }}``  | The expected type           |
++-----------------+-----------------------------+
 
 .. include:: /reference/constraints/_payload-option.rst.inc
 

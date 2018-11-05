@@ -6,7 +6,7 @@ Session Proxy Examples
 
 The session proxy mechanism has a variety of uses and this article demonstrates
 two common uses. Rather than using the regular session handler, you can create
-a custom save handler just by defining a class that extends the
+a custom save handler by defining a class that extends the
 :class:`Symfony\\Component\\HttpFoundation\\Session\\Storage\\Proxy\\SessionHandlerProxy`
 class.
 
@@ -110,15 +110,15 @@ can intercept the session before it is written::
 
     use App\Entity\User;
     use Symfony\Component\HttpFoundation\Session\Storage\Proxy\SessionHandlerProxy;
-    use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+    use Symfony\Component\Security\Core\Security;
 
     class ReadOnlySessionProxy extends SessionHandlerProxy
     {
-        private $tokenStorage;
+        private $security;
 
-        public function __construct(\SessionHandlerInterface $handler, TokenStorageInterface $tokenStorage)
+        public function __construct(\SessionHandlerInterface $handler, Security $security)
         {
-            $this->tokenStorage = $tokenStorage;
+            $this->security = $security;
 
             parent::__construct($handler);
         }
@@ -134,11 +134,7 @@ can intercept the session before it is written::
 
         private function getUser()
         {
-            if (!$token = $tokenStorage->getToken()) {
-                return;
-            }
-
-            $user = $token->getUser();
+            $user = $this->security->getUser();
             if (is_object($user)) {
                 return $user;
             }

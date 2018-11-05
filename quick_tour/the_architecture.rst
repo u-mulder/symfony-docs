@@ -21,18 +21,29 @@ Want a logging system? No problem:
 This installs and configures (via a recipe) the powerful `Monolog`_ library. To
 use the logger in a controller, add a new argument type-hinted with ``LoggerInterface``::
 
+    // src/Controller/DefaultController.php
+    namespace App\Controller;
+
     use Psr\Log\LoggerInterface;
-    // ...
+    use Symfony\Component\Routing\Annotation\Route;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-    public function index($name, LoggerInterface $logger)
+    class DefaultController extends AbstractController
     {
-        $logger->info("Saying hello to $name!");
+        /**
+         * @Route("/hello/{name}")
+         */
+        public function index($name, LoggerInterface $logger)
+        {
+            $logger->info("Saying hello to $name!");
 
-        // ...
+            // ...
+        }
     }
 
-That's it! The new log message will be written to ``var/log/dev.log``. Of course, this
-can be configured by updating one of the config files added by the recipe.
+That's it! The new log message will be written to ``var/log/dev.log``. The log
+file path or even a different method of logging can be configured by updating
+one of the config files added by the recipe.
 
 Services & Autowiring
 ---------------------
@@ -89,16 +100,27 @@ this code directly in your controller, create a new class::
 
 Great! You can use this immediately in your controller::
 
+    // src/Controller/DefaultController.php
+    namespace App\Controller;
+
     use App\GreetingGenerator;
-    // ...
+    use Psr\Log\LoggerInterface;
+    use Symfony\Component\Routing\Annotation\Route;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-    public function index($name, LoggerInterface $logger, GreetingGenerator $generator)
+    class DefaultController extends AbstractController
     {
-        $greeting = $generator->getRandomGreeting();
+        /**
+         * @Route("/hello/{name}")
+         */
+        public function index($name, LoggerInterface $logger, GreetingGenerator $generator)
+        {
+            $greeting = $generator->getRandomGreeting();
 
-        $logger->info("Saying $greeting to $name!");
+            $logger->info("Saying $greeting to $name!");
 
-        // ...
+            // ...
+        }
     }
 
 That's it! Symfony will instantiate the ``GreetingGenerator`` automatically and
@@ -108,6 +130,7 @@ difference is that it's done in the constructor:
 
 .. code-block:: diff
 
+    // src/GreetingGenerator.php
     + use Psr\Log\LoggerInterface;
 
     class GreetingGenerator
@@ -136,7 +159,7 @@ Twig Extension & Autoconfiguration
 
 Thanks to Symfony's service handling, you can *extend* Symfony in many ways, like
 by creating an event subscriber or a security voter for complex authorization
-rules. Let's add a new filter to Twig called ``greet``. How? Just create a class
+rules. Let's add a new filter to Twig called ``greet``. How? Create a class
 that extends ``AbstractExtension``::
 
     // src/Twig/GreetExtension.php
@@ -174,12 +197,13 @@ After creating just *one* file, you can use this immediately:
 
 .. code-block:: twig
 
+    {# templates/default/index.html.twig #}
     {# Will print something like "Hey Symfony!" #}
     <h1>{{ name|greet }}</h1>
 
 How does this work? Symfony notices that your class extends ``AbstractExtension``
 and so *automatically* registers it as a Twig extension. This is called autoconfiguration,
-and it works for *many* many things. Just create a class and then extend a base class
+and it works for *many* many things. Create a class and then extend a base class
 (or implement an interface). Symfony takes care of the rest.
 
 Blazing Speed: The Cached Container
@@ -196,7 +220,7 @@ add *no* overhead! It also means that you get *great* errors: Symfony inspects a
 validates *everything* when the container is built.
 
 Now you might be wondering what happens when you update a file and the cache needs
-to rebuild? I like you're thinking! It's smart enough to rebuild on the next page
+to rebuild? I like your thinking! It's smart enough to rebuild on the next page
 load. But that's really the topic of the next section.
 
 Development Versus Production: Environments

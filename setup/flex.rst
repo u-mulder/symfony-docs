@@ -74,12 +74,12 @@ SwiftmailerBundle:
     }
 
 The ``aliases`` option allows Flex to install packages using short and easy to
-remember names (``composer require mailer`` vs ``composer require
-symfony/swiftmailer-bundle``). The ``bundles`` option tells Flex in which
-environments this bundle should be enabled automatically (``all`` in this
-case). The ``env`` option makes Flex to add new environment variables to the
-application. Finally, the ``copy-from-recipe`` option allows the recipe to copy
-files and directories into your application.
+remember names (``composer require mailer`` vs
+``composer require symfony/swiftmailer-bundle``). The ``bundles`` option tells
+Flex in which environments this bundle should be enabled automatically (``all``
+in this case). The ``env`` option makes Flex to add new environment variables to
+the application. Finally, the ``copy-from-recipe`` option allows the recipe to
+copy files and directories into your application.
 
 The instructions defined in this ``manifest.json`` file are also used by
 Symfony Flex when uninstalling dependencies (e.g. ``composer remove mailer``)
@@ -95,13 +95,8 @@ two public repositories:
 
 * `Contrib recipe repository`_, contains all the recipes created by the
   community. All of them are guaranteed to work, but their associated packages
-  could be unmaintained. Symfony Flex ignores these recipes by default, but you
-  can execute this command to start using them in your project:
-
-  .. code-block:: terminal
-
-        $ cd your-project/
-        $ composer config extra.symfony.allow-contrib true
+  could be unmaintained. Symfony Flex will ask your permission before installing
+  any of these recipes.
 
 Read the `Symfony Recipes documentation`_ to learn everything about how to
 create recipes for your own packages.
@@ -116,7 +111,7 @@ Symfony application by executing the following command:
 
 .. code-block:: terminal
 
-    $ composer create-project symfony/skeleton my-project
+    $ composer create-project symfony/skeleton:4.1.* my-project
 
 .. note::
 
@@ -176,7 +171,7 @@ manual steps:
    .. code-block:: terminal
 
        $ composer remove symfony/symfony
-       
+
    Now add the ``symfony/symfony`` package to the ``conflict`` section of the project's
    ``composer.json`` file as `shown in this example of the skeleton-project`_ so that
    it will not be installed again:
@@ -203,10 +198,10 @@ manual steps:
          logger mailer form security translation validator
        $ composer require --dev dotenv maker-bundle orm-fixtures profiler
 
-#. If the project's ``composer.json`` file doesn't contain ``symfony/symfony``
+#. If the project's ``composer.json`` file doesn't contain the ``symfony/symfony``
    dependency, it already defines its dependencies explicitly, as required by
-   Flex. You just need to reinstall all dependencies to force Flex generate the
-   config files in ``config/``, which is the most tedious part of the upgrade
+   Flex. Reinstall all dependencies to force Flex to generate the
+   configuration files in ``config/``, which is the most tedious part of the upgrade
    process:
 
    .. code-block:: terminal
@@ -228,6 +223,12 @@ manual steps:
    :doc:`autowiring feature </service_container/3.3-di-changes>` you can remove
    most of the service configuration.
 
+   .. note::
+
+       Make sure that your previous configuration files don't have ``imports``
+       declarations pointing to resources already loaded by ``Kernel::configureContainer()``
+       or ``Kernel::configureRoutes()`` methods.
+
 #. Move the rest of the ``app/`` contents as follows (and after that, remove the
    ``app/`` directory):
 
@@ -236,8 +237,11 @@ manual steps:
    * ``app/Resources/<BundleName>/views/`` -> ``templates/bundles/<BundleName>/``
    * rest of ``app/Resources/`` files -> ``src/Resources/``
 
-#. Move the original PHP source code from ``src/AppBundle/*`` to ``src/``. In
-   addition to moving the files, update the ``autoload`` and ``autoload-dev``
+#. Move the original PHP source code from ``src/AppBundle/*``, except bundle
+   specific files (like ``AppBundle.php`` and ``DependencyInjection/``), to
+   ``src/``. Remove ``src/AppBundle/``.
+
+   In addition to moving the files, update the ``autoload`` and ``autoload-dev``
    values of the ``composer.json`` file as `shown in this example`_ to use
    ``App\`` and ``App\Tests\`` as the application namespaces (advanced IDEs can
    do this automatically).
@@ -261,6 +265,9 @@ manual steps:
 #. Update the ``bin/console`` script `copying Symfony's bin/console source`_
    and changing anything according to your original console script.
 
+#. Remove the ``bin/symfony_requirements`` script and if you need a replacement
+   for it, use the new `Symfony Requirements Checker`_.
+
 .. _`Symfony Flex`: https://github.com/symfony/flex
 .. _`Symfony Installer`: https://github.com/symfony/symfony-installer
 .. _`Symfony Standard Edition`: https://github.com/symfony/symfony-standard
@@ -272,3 +279,4 @@ manual steps:
 .. _`shown in this example of the skeleton-project`: https://github.com/symfony/skeleton/blob/8e33fe617629f283a12bbe0a6578bd6e6af417af/composer.json#L44-L46
 .. _`copying Symfony's index.php source`: https://github.com/symfony/recipes/blob/master/symfony/framework-bundle/3.3/public/index.php
 .. _`copying Symfony's bin/console source`: https://github.com/symfony/recipes/blob/master/symfony/console/3.3/bin/console
+.. _`Symfony Requirements Checker`: https://github.com/symfony/requirements-checker

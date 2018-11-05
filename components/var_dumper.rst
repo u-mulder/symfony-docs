@@ -14,7 +14,7 @@ Installation
 
 .. code-block:: terminal
 
-    $ composer require symfony/var-dumper
+    $ composer require symfony/var-dumper --dev
 
 Alternatively, you can clone the `<https://github.com/symfony/var-dumper>`_ repository.
 
@@ -23,7 +23,7 @@ Alternatively, you can clone the `<https://github.com/symfony/var-dumper>`_ repo
 .. note::
 
     If using it inside a Symfony application, make sure that the DebugBundle has
-    been installed (or run ``composer require debug`` to install it).
+    been installed (or run ``composer require symfony/debug-bundle`` to install it).
 
 .. _components-var-dumper-dump:
 
@@ -64,6 +64,15 @@ current PHP SAPI:
   mechanism;
 * On other SAPIs, dumps are written as HTML in the regular output.
 
+.. tip::
+
+    You can also select the output format explicitly defining the
+    ``VAR_DUMPER_FORMAT`` environment variable and setting its value to either
+    ``html`` or ``cli``.
+
+    .. versionadded:: 4.2
+        The ``VAR_DUMPER_FORMAT`` env var was introduced in Symfony 4.2.
+
 .. note::
 
     If you want to catch the dump output as a string, please read the
@@ -82,6 +91,112 @@ current PHP SAPI:
     #. From time to time, run ``composer global update symfony/var-dumper``
        to have the latest bug fixes.
 
+.. tip::
+
+    The VarDumper component also provides a ``dd()`` ("dump and die") helper
+    function. This function dumps the variables using ``dump()`` and
+    immediately ends the execution of the script (using :phpfunction:`exit`).
+
+    .. versionadded:: 4.1
+        The ``dd()`` helper method was introduced in Symfony 4.1.
+
+.. _var-dumper-dump-server:
+
+The Dump Server
+---------------
+
+.. versionadded:: 4.1
+    The dump server was introduced in Symfony 4.1.
+
+The ``dump()`` function outputs its contents in the same browser window or
+console terminal as your own application. Sometimes mixing the real output
+with the debug output can be confusing. That's why this component provides a
+server to collect all the dumped data.
+
+Start the server with the ``server:dump`` command and whenever you call to
+``dump()``, the dumped data won't be displayed in the output but sent to that
+server, which outputs it to its own console or to an HTML file:
+
+.. code-block:: terminal
+
+    # displays the dumped data in the console:
+    $ ./bin/console server:dump
+      [OK] Server listening on tcp://0.0.0.0:9912
+
+    # stores the dumped data in a file using the HTML format:
+    $ ./bin/console server:dump --format=html > dump.html
+
+Inside a Symfony application, the output of the dump server is configured with
+the :ref:`dump_destination option <configuration-debug-dump_destination>` of the
+``debug`` package:
+
+.. configuration-block::
+
+    .. code-block:: yaml
+
+        # config/packages/debug.yaml
+        debug:
+           dump_destination: "tcp://%env(VAR_DUMPER_SERVER)%"
+
+    .. code-block:: xml
+
+        <!-- config/packages/debug.xml -->
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <container xmlns="http://symfony.com/schema/dic/debug"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:debug="http://symfony.com/schema/dic/debug"
+            xsi:schemaLocation="http://symfony.com/schema/dic/services
+                http://symfony.com/schema/dic/services/services-1.0.xsd
+                http://symfony.com/schema/dic/debug http://symfony.com/schema/dic/debug/debug-1.0.xsd">
+
+            <debug:config dump-destination="tcp://%env(VAR_DUMPER_SERVER)%" />
+        </container>
+
+    .. code-block:: php
+
+        // config/packages/debug.php
+        $container->loadFromExtension('debug', array(
+           'dump_destination' => 'tcp://%env(VAR_DUMPER_SERVER)%',
+        ));
+
+Outside a Symfony application, use the :class:`Symfony\\Component\\VarDumper\\Dumper\\ServerDumper` class::
+
+    require __DIR__.'/vendor/autoload.php';
+
+    use Symfony\Component\VarDumper\VarDumper;
+    use Symfony\Component\VarDumper\Cloner\VarCloner;
+    use Symfony\Component\VarDumper\Dumper\CliDumper;
+    use Symfony\Component\VarDumper\Dumper\ContextProvider\CliContextProvider;
+    use Symfony\Component\VarDumper\Dumper\ContextProvider\SourceContextProvider;
+    use Symfony\Component\VarDumper\Dumper\HtmlDumper;
+    use Symfony\Component\VarDumper\Dumper\ServerDumper;
+
+    $cloner = new VarCloner();
+    $fallbackDumper = \in_array(\PHP_SAPI, array('cli', 'phpdbg')) ? new CliDumper() : new HtmlDumper();
+    $dumper = new ServerDumper('tcp://127.0.0.1:9912', $fallbackDumper, array(
+        'cli' => new CliContextProvider(),
+        'source' => new SourceContextProvider(),
+    ));
+
+    VarDumper::setHandler(function ($var) use ($cloner, $dumper) {
+        $dumper->dump($cloner->cloneVar($var));
+    });
+
+.. note::
+
+    The second argument of :class:`Symfony\\Component\\VarDumper\\Dumper\\ServerDumper`
+    is a :class:`Symfony\\Component\\VarDumper\\Dumper\\DataDumperInterface` instance
+    used as a fallback when the server is unreachable. The third argument are the
+    context providers, which allow to gather some info about the context in which the
+    data was dumped. The built-in context providers are: ``cli``, ``request`` and ``source``.
+
+Then you can use the following command to start a server out-of-the-box:
+
+.. code-block:: terminal
+
+     $ ./vendor/bin/var-dump-server
+       [OK] Server listening on tcp://127.0.0.1:9912
+
 DebugBundle and Twig Integration
 --------------------------------
 
@@ -93,8 +208,9 @@ of your application may just break it by e.g. sending HTTP headers or
 corrupting your view, the bundle configures the ``dump()`` function so that
 variables are dumped in the web debug toolbar.
 
-But if the toolbar cannot be displayed because you e.g. called ``die``/``exit``
-or a fatal error occurred, then dumps are written on the regular output.
+But if the toolbar cannot be displayed because you e.g. called
+``die()``/``exit()``/``dd()`` or a fatal error occurred, then dumps are written
+on the regular output.
 
 In a Twig template, two constructs are available for dumping a variable.
 Choosing between both is mostly a matter of personal taste, still:

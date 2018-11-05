@@ -23,16 +23,16 @@ page again (see below for an implementation example).
 
     The 304 status code means "Not Modified". It's important because with
     this status code the response does *not* contain the actual content being
-    requested. Instead, the response is simply a light-weight set of directions that
-    tells the cache that it should use its stored version.
+    requested. Instead, the response only consists of the response headers that
+    tells the cache that it can use its stored version of the content.
 
 Like with expiration, there are two different HTTP headers that can be used
 to implement the validation model: ``ETag`` and ``Last-Modified``.
 
 .. sidebar:: Expiration and Validation
 
-    You can of course use both validation and expiration within the same ``Response``.
-    As expiration wins over validation, you can easily benefit from the best of
+    You can use both validation and expiration within the same ``Response``.
+    As expiration wins over validation, you can benefit from the best of
     both worlds. In other words, by using both expiration and validation, you
     can instruct the cache to serve the cached content, while checking back
     at some interval (the expiration) to verify that the content is still valid.
@@ -64,7 +64,7 @@ To see a simple implementation, generate the ETag as the md5 of the content::
 
     use Symfony\Component\HttpFoundation\Request;
 
-    class DefaultController extends Controller
+    class DefaultController extends AbstractController
     {
         public function homepage(Request $request)
         {
@@ -129,7 +129,7 @@ header value::
     use Symfony\Component\HttpFoundation\Request;
     use App\Entity\Article;
 
-    class ArticleController extends Controller
+    class ArticleController extends AbstractController
     {
         public function show(Article $article, Request $request)
         {
@@ -188,7 +188,7 @@ exposing a simple and efficient pattern::
     use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\HttpFoundation\Request;
 
-    class ArticleController extends Controller
+    class ArticleController extends AbstractController
     {
         public function show($articleSlug, Request $request)
         {
@@ -200,7 +200,7 @@ exposing a simple and efficient pattern::
 
             // create a Response with an ETag and/or a Last-Modified header
             $response = new Response();
-            $response->setETag($article->computeETag());
+            $response->setEtag($article->computeETag());
             $response->setLastModified($article->getPublishedAt());
 
             // Set response as public. Otherwise it will be private by default.

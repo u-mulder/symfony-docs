@@ -10,25 +10,16 @@ When maintaining an application or bundle, you may add or remove translation
 messages and forget to update the message catalogues. The ``debug:translation``
 command helps you to find these missing or unused translation messages templates:
 
-.. configuration-block::
+.. code-block:: twig
 
-    .. code-block:: twig
+    {# messages can be found when using the trans/transchoice filters and tags #}
+    {% trans %}Symfony is great{% endtrans %}
 
-        {# messages can be found when using the trans/transchoice filters and tags #}
-        {% trans %}Symfony is great{% endtrans %}
+    {{ 'Symfony is great'|trans }}
 
-        {{ 'Symfony is great'|trans }}
+    {{ 'Symfony is great'|transchoice(1) }}
 
-        {{ 'Symfony is great'|transchoice(1) }}
-
-        {% transchoice 1 %}Symfony is great{% endtranschoice %}
-
-    .. code-block:: php
-
-        // messages can be found when using the trans() and transChoice() methods
-        $view['translator']->trans("Symfony is great");
-
-        $view['translator']->transChoice('Symfony is great', 1);
+    {% transchoice 1 %}Symfony is great{% endtranschoice %}
 
 .. caution::
 
@@ -113,16 +104,11 @@ To inspect all messages in the ``fr`` locale for the application, run:
 
     $ php bin/console debug:translation fr
 
-    +----------+------------------+----------------------+-------------------------------+
-    | State(s) | Id               | Message Preview (fr) | Fallback Message Preview (en) |
-    +----------+------------------+----------------------+-------------------------------+
-    | o        | Symfony is great | J'aime Symfony       | Symfony is great              |
-    +----------+------------------+----------------------+-------------------------------+
-
-    Legend:
-      x Missing message
-      o Unused message
-      = Same as the fallback message
+    ---------  ------------------  ----------------------  -------------------------------
+     State      Id                  Message Preview (fr)    Fallback Message Preview (en)
+    ---------  ------------------  ----------------------  -------------------------------
+     unused     Symfony is great    J'aime Symfony          Symfony is great
+    ---------  ------------------  ----------------------  -------------------------------
 
 It shows you a table with the result when translating the message in the ``fr``
 locale and the result when the fallback locale ``en`` would be used. On top
@@ -138,16 +124,11 @@ output:
 
     $ php bin/console debug:translation fr
 
-    +----------+------------------+----------------------+-------------------------------+
-    | State(s) | Id               | Message Preview (fr) | Fallback Message Preview (en) |
-    +----------+------------------+----------------------+-------------------------------+
-    |          | Symfony is great | J'aime Symfony       | Symfony is great              |
-    +----------+------------------+----------------------+-------------------------------+
-
-    Legend:
-      x Missing message
-      o Unused message
-      = Same as the fallback message
+    ---------  ------------------  ----------------------  -------------------------------
+     State      Id                  Message Preview (fr)    Fallback Message Preview (en)
+    ---------  ------------------  ----------------------  -------------------------------
+                Symfony is great    J'aime Symfony          Symfony is great
+    ---------  ------------------  ----------------------  -------------------------------
 
 The state is empty which means the message is translated in the ``fr`` locale
 and used in one or more templates.
@@ -159,16 +140,11 @@ for the ``fr`` locale and run the command, you will get:
 
     $ php bin/console debug:translation fr
 
-    +----------+------------------+----------------------+-------------------------------+
-    | State(s) | Id               | Message Preview (fr) | Fallback Message Preview (en) |
-    +----------+------------------+----------------------+-------------------------------+
-    | x =      | Symfony is great | J'aime Symfony       | Symfony is great              |
-    +----------+------------------+----------------------+-------------------------------+
-
-    Legend:
-      x Missing message
-      o Unused message
-      = Same as the fallback message
+    ---------  ------------------  ----------------------  -------------------------------
+     State      Id                  Message Preview (fr)    Fallback Message Preview (en)
+    ---------  ------------------  ----------------------  -------------------------------
+     missing    Symfony is great    Symfony is great        Symfony is great
+    ---------  ------------------  ----------------------  -------------------------------
 
 The state indicates the message is missing because it is not translated in
 the ``fr`` locale but it is still used in the template. Moreover, the message
@@ -183,16 +159,11 @@ translation file in the ``fr`` locale and run the command, you will get:
 
     $ php bin/console debug:translation fr
 
-    +----------+------------------+----------------------+-------------------------------+
-    | State(s) | Id               | Message Preview (fr) | Fallback Message Preview (en) |
-    +----------+------------------+----------------------+-------------------------------+
-    |   =      | Symfony is great | J'aime Symfony       | Symfony is great              |
-    +----------+------------------+----------------------+-------------------------------+
-
-    Legend:
-      x Missing message
-      o Unused message
-      = Same as the fallback message
+    ----------  ------------------  ----------------------  -------------------------------
+     State      Id                  Message Preview (fr)    Fallback Message Preview (en)
+    ----------  ------------------  ----------------------  -------------------------------
+     fallback    Symfony is great    Symfony is great        Symfony is great
+    ----------  ------------------  ----------------------  -------------------------------
 
 You can see that the translations of the message are identical in the ``fr``
 and ``en`` locales which means this message was probably copied from French

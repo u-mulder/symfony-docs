@@ -4,21 +4,19 @@
 How to Create a custom Authentication Provider
 ==============================================
 
-.. tip::
+.. caution::
 
-    Creating a custom authentication system is hard, and this entry will walk
-    you through that process. But depending on your needs, you may be able
-    to solve your problem in a simpler manner, or via a community bundle:
+    Creating a custom authentication system is hard, and almost definitely
+    **not** needed. Instead, see :doc:`/security/guard_authentication` for a
+    simple way to create an authentication system you will love. Do **not**
+    keep reading unless you want to learn the lowest level details of
+    authentication.
 
-    * :doc:`/security/guard_authentication`
-    * :doc:`/security/custom_password_authenticator`
-    * :doc:`/security/api_key_authentication`
-    * To authenticate via OAuth using a third-party service such as Google, Facebook
-      or Twitter, try using the `HWIOAuthBundle`_ community bundle.
-
-If you have read the article on :doc:`/security`, you understand the
-distinction Symfony makes between authentication and authorization in the
-implementation of security. This article discusses the core classes involved
+Symfony provides support for the most
+:doc:`common authentication mechanisms </security/auth_providers>`. However, your
+app may need to integrated with some proprietary single-sing-on system or some
+legacy authentication mechanism. In those cases you could create a custom
+authentication provider. This article discusses the core classes involved
 in the authentication process, and how to implement a custom authentication
 provider. Because authentication and authorization are separate concepts,
 this extension will be user-provider agnostic, and will function with your
@@ -131,17 +129,17 @@ set an authenticated token in the token storage if successful::
         {
             $request = $event->getRequest();
 
-            $wsseRegex = '/UsernameToken Username="([^"]+)", PasswordDigest="([^"]+)", Nonce="([a-zA-Z0-9+\/]+={0,2})", Created="([^"]+)"/';
+            $wsseRegex = '/UsernameToken Username="(?P<username>[^"]+)", PasswordDigest="(?P<digest>[^"]+)", Nonce="(?P<nonce>[a-zA-Z0-9+\/]+={0,2})", Created="(?P<created>[^"]+)"/';
             if (!$request->headers->has('x-wsse') || 1 !== preg_match($wsseRegex, $request->headers->get('x-wsse'), $matches)) {
                 return;
             }
 
             $token = new WsseUserToken();
-            $token->setUser($matches[1]);
+            $token->setUser($matches['username']);
 
-            $token->digest  = $matches[2];
-            $token->nonce   = $matches[3];
-            $token->created = $matches[4];
+            $token->digest  = $matches['digest'];
+            $token->nonce   = $matches['nonce'];
+            $token->created = $matches['created'];
 
             try {
                 $authToken = $this->authenticationManager->authenticate($token);
@@ -206,7 +204,6 @@ the ``PasswordDigest`` header value matches with the user's password::
     use Symfony\Component\Security\Core\Authentication\Provider\AuthenticationProviderInterface;
     use Symfony\Component\Security\Core\User\UserProviderInterface;
     use Symfony\Component\Security\Core\Exception\AuthenticationException;
-    use Symfony\Component\Security\Core\Exception\NonceExpiredException;
     use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
     use App\Security\Authentication\Token\WsseUserToken;
 
@@ -259,7 +256,9 @@ the ``PasswordDigest`` header value matches with the user's password::
             // Validate that the nonce is *not* in cache
             // if it is, this could be a replay attack
             if ($cacheItem->isHit()) {
-                throw new NonceExpiredException('Previously used nonce detected');
+                // In a real world application you should throw a custom
+                // exception extending the AuthenticationException
+                throw new AuthenticationException('Previously used nonce detected');
             }
 
             // Store the item in cache for 5 minutes
@@ -285,13 +284,6 @@ the ``PasswordDigest`` header value matches with the user's password::
     method, which tells the authentication manager whether or not to use this
     provider for the given token. In the case of multiple providers, the
     authentication manager will then move to the next provider in the list.
-
-.. note::
-
-    While the :phpfunction:`hash_equals` function was introduced in PHP 5.6,
-    you are safe to use it with any PHP version in your Symfony application. In
-    PHP versions prior to 5.6, `Symfony Polyfill`_ (which is included in
-    Symfony) will define the function for you.
 
 The Factory
 -----------
@@ -322,11 +314,11 @@ create a class which implements
             $providerId = 'security.authentication.provider.wsse.'.$id;
             $container
                 ->setDefinition($providerId, new ChildDefinition(WsseProvider::class))
-                ->replaceArgument(0, new Reference($userProvider))
+                ->setArgument(0, new Reference($userProvider))
             ;
 
             $listenerId = 'security.authentication.listener.wsse.'.$id;
-            $listener = $container->setDefinition($listenerId, new ChildDefinition(WsseListener::class));
+            $container->setDefinition($listenerId, new ChildDefinition(WsseListener::class));
 
             return array($providerId, $listenerId, $defaultEntryPoint);
         }
@@ -575,8 +567,8 @@ in order to put it to use::
             $providerId = 'security.authentication.provider.wsse.'.$id;
             $container
                 ->setDefinition($providerId, new ChildDefinition(WsseProvider::class))
-                ->replaceArgument(0, new Reference($userProvider))
-                ->replaceArgument(2, $config['lifetime']);
+                ->setArgument(0, new Reference($userProvider))
+                ->setArgument(2, $config['lifetime']);
             // ...
         }
 
@@ -645,8 +637,7 @@ set to any desirable value per firewall.
 The rest is up to you! Any relevant configuration items can be defined
 in the factory and consumed or passed to the other classes in the container.
 
-.. _`HWIOAuthBundle`: https://github.com/hwi/HWIOAuthBundle
+
 .. _`WSSE`: http://www.xml.com/pub/a/2003/12/17/dive.html
 .. _`nonce`: https://en.wikipedia.org/wiki/Cryptographic_nonce
 .. _`timing attacks`: https://en.wikipedia.org/wiki/Timing_attack
-.. _`Symfony Polyfill`: https://github.com/symfony/polyfill

@@ -25,6 +25,15 @@ Alternatively, you can clone the `<https://github.com/symfony/http-kernel>`_ rep
 The Workflow of a Request
 -------------------------
 
+.. seealso::
+
+    This article explains how to use the HttpKernel features as an independent
+    component in any PHP application. In Symfony applications everything is
+    already configured and ready to use. Read the :doc:`/controller` and
+    :doc:`/event_dispatcher` articles to learn about how to use it to create
+    controllers and define events in Symfony applications.
+
+
 Every HTTP web interaction begins with a request and ends with a response.
 Your job as a developer is to create PHP code that reads the request information
 (e.g. the URL) and creates and returns a response (e.g. an HTML page or JSON string).
@@ -87,8 +96,8 @@ To help explain this process, this document looks at each step of the process
 and talks about how one specific implementation of the HttpKernel - the Symfony
 Framework - works.
 
-Initially, using the :class:`Symfony\\Component\\HttpKernel\\HttpKernel`
-is really simple and involves creating an
+Initially, using the :class:`Symfony\\Component\\HttpKernel\\HttpKernel` does
+not take many steps. You create an
 :doc:`event dispatcher </components/event_dispatcher>` and a
 :ref:`controller and argument resolver <component-http-kernel-resolve-controller>`
 (explained below). To complete your working kernel, you'll add more event
@@ -333,8 +342,7 @@ of arguments that should be passed when executing that callable.
 
     b) If the argument in the controller is type-hinted with Symfony's
        :class:`Symfony\\Component\\HttpFoundation\\Request` object, the
-       ``Request`` is passed in as the value. If you have a custom ``Request``
-       class, it will be injected as long as you extend the Symfony ``Request``.
+       ``Request`` is passed in as the value.
 
     c) If the function or method argument is `variadic`_ and the ``Request``
        ``attributes`` bag contains an array for that argument, they will all be
@@ -352,7 +360,7 @@ of arguments that should be passed when executing that callable.
 5) Calling the Controller
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The next step is simple! ``HttpKernel::handle()`` executes the controller.
+The next step ``HttpKernel::handle()`` does is executing the controller.
 
 The job of the controller is to build the response for the given resource.
 This could be an HTML page, a JSON string or anything else. Unlike every

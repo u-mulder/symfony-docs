@@ -1,9 +1,8 @@
 Time
 ====
 
-Validates that a value is a valid time, meaning an object implementing
-``DateTimeInterface`` or a string (or an object that can be cast into a string)
-that follows a valid ``HH:MM:SS`` format.
+Validates that a value is a valid time, meaning a string (or an object that can
+be cast into a string) that follows a valid ``HH:MM:SS`` format.
 
 +----------------+------------------------------------------------------------------------+
 | Applies to     | :ref:`property or method <validation-property-target>`                 |
@@ -35,6 +34,7 @@ of the day when the event starts:
         {
             /**
              * @Assert\Time()
+             * @var string A "H:i:s" formatted value
              */
              protected $startsAt;
         }
@@ -72,11 +72,18 @@ of the day when the event starts:
 
         class Event
         {
+           /**
+            * @var string A "H:i:s" formatted value
+            */
+            protected $startsAt;
+
             public static function loadValidatorMetadata(ClassMetadata $metadata)
             {
                 $metadata->addPropertyConstraint('startsAt', new Assert\Time());
             }
         }
+
+.. include:: /reference/constraints/_empty-values-are-valid.rst.inc
 
 Options
 -------
@@ -87,5 +94,13 @@ message
 **type**: ``string`` **default**: ``This value is not a valid time.``
 
 This message is shown if the underlying data is not a valid time.
+
+You can use the following parameters in this message:
+
++-----------------+-----------------------------+
+| Parameter       | Description                 |
++=================+=============================+
+| ``{{ value }}`` | The current (invalid) value |
++-----------------+-----------------------------+
 
 .. include:: /reference/constraints/_payload-option.rst.inc

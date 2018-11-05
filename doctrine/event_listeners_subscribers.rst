@@ -23,7 +23,7 @@ The Doctrine website also explains all existing events that can be listened to.
 Configuring the Listener/Subscriber
 -----------------------------------
 
-To register a service to act as an event listener or subscriber you just have
+To register a service to act as an event listener or subscriber you have
 to :doc:`tag </service_container/tags>` it with the appropriate name. Depending
 on your use-case, you can hook a listener into every DBAL connection and ORM
 entity manager or just into one specific DBAL connection and all the entity
@@ -95,21 +95,22 @@ a ``postPersist()`` method, which will be called when the event is dispatched::
     // src/EventListener/SearchIndexer.php
     namespace App\EventListener;
 
-    use Doctrine\ORM\Event\LifecycleEventArgs;
+    // for Doctrine < 2.4: use Doctrine\ORM\Event\LifecycleEventArgs;
+    use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
     use App\Entity\Product;
 
     class SearchIndexer
     {
         public function postPersist(LifecycleEventArgs $args)
         {
-            $entity = $args->getEntity();
+            $entity = $args->getObject();
 
             // only act on some "Product" entity
             if (!$entity instanceof Product) {
                 return;
             }
 
-            $entityManager = $args->getEntityManager();
+            $entityManager = $args->getObjectManager();
             // ... do something with the Product
         }
     }
@@ -166,11 +167,11 @@ interface and have an event method for each event it subscribes to::
 
         public function index(LifecycleEventArgs $args)
         {
-            $entity = $args->getEntity();
+            $entity = $args->getObject();
 
             // perhaps you only want to act on some "Product" entity
             if ($entity instanceof Product) {
-                $entityManager = $args->getEntityManager();
+                $entityManager = $args->getObjectManager();
                 // ... do something with the Product
             }
         }
@@ -186,57 +187,74 @@ interface and have an event method for each event it subscribes to::
 
 For a full reference, see chapter `The Event System`_ in the Doctrine documentation.
 
-Lazy loading for Event Listeners
---------------------------------
+Performance Considerations
+--------------------------
 
-One subtle difference between listeners and subscribers is that Symfony can load
-entity listeners lazily. This means that your listener class will only be fetched
-from the service container (and thus be instantiated) once the event it is linked
-to actually fires.
+One important difference between listeners and subscribers is that Symfony loads
+entity listeners lazily. This means that the listener classes are only fetched
+from the service container (and instantiated) if the related event is actually
+fired.
 
-Lazy loading might give you a slight performance improvement when your listener
-runs for events that rarely fire. Also, it can help you when you run into
-*circular dependency issues* that may occur when your listener service in turn
-depends on the DBAL connection.
+That's why it is preferable to use entity listeners instead of subscribers
+whenever possible.
 
-To mark a listener service as lazily loaded, just add the ``lazy`` attribute
-to the tag like so:
+.. versionadded:: 4.2
+    Starting from Symfony 4.2, Doctrine entity listeners are always lazy. In
+    previous Symfony versions this behavior was configurable.
+
+.. _`The Event System`: http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/events.html
+.. _`the Doctrine Documentation`: https://symfony.com/doc/current/bundles/DoctrineBundle/entity-listeners.html
+
+Priorities for Event Listeners
+------------------------------
+
+In case you have multiple listeners for the same event you can control the order
+in which they are invoked using the ``priority`` attribute on the tag.
+Listeners with a higher priority are invoked first.
 
 .. configuration-block::
 
     .. code-block:: yaml
 
+        # config/services.yaml
         services:
-            App\EventListener\SearchIndexer:
+            App\EventListener\MyHighPriorityListener:
                 tags:
-                    - { name: doctrine.event_listener, event: postPersist, lazy: true }
+                    - { name: doctrine.event_listener, event: postPersist, priority: 10 }
+
+            App\EventListener\MyLowPriorityListener:
+                tags:
+                    - { name: doctrine.event_listener, event: postPersist, priority: 1 }
 
     .. code-block:: xml
 
+        <!-- config/services.xml -->
         <?xml version="1.0" ?>
         <container xmlns="http://symfony.com/schema/dic/services"
             xmlns:doctrine="http://symfony.com/schema/dic/doctrine">
 
             <services>
-                <service id="App\EventListener\SearchIndexer" autowire="true">
-                    <tag name="doctrine.event_listener" event="postPersist" lazy="true" />
+                <service id="App\EventListener\MyHighPriorityListener" autowire="true">
+                    <tag name="doctrine.event_listener" event="postPersist" priority="10" />
+                </service>
+                <service id="App\EventListener\MyLowPriorityListener" autowire="true">
+                    <tag name="doctrine.event_listener" event="postPersist" priority="1" />
                 </service>
             </services>
         </container>
 
     .. code-block:: php
 
-        use App\EventListener\SearchIndexer;
+        // config/services.php
+        use AppBundle\EventListener\MyHighPriorityListener;
+        use AppBundle\EventListener\MyLowPriorityListener;
 
         $container
-            ->autowire(SearchIndexer::class)
-            ->addTag('doctrine.event_listener', array('event' => 'postPersist', 'lazy' => 'true'))
+            ->autowire(MyHighPriorityListener::class)
+            ->addTag('doctrine.event_listener', array('event' => 'postPersist', 'priority' => 10))
         ;
 
-.. note::
-
-    Marking an event listener as ``lazy`` has nothing to do with lazy service
-    definitions which are described :doc:`in their own section </service_container/lazy_services>`
-
-.. _`The Event System`: http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/events.html
-.. _`the Doctrine Documentation`: http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/events.html#entity-listeners
+        $container
+            ->autowire(MyLowPriorityListener::class)
+            ->addTag('doctrine.event_listener', array('event' => 'postPersist', 'priority' => 1))
+        ;

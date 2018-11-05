@@ -17,7 +17,6 @@ an array of items is one of those valid choices.
 |                | - `multipleMessage`_                                                 |
 |                | - `minMessage`_                                                      |
 |                | - `maxMessage`_                                                      |
-|                | - `strict`_                                                          |
 |                | - `payload`_                                                         |
 +----------------+----------------------------------------------------------------------+
 | Class          | :class:`Symfony\\Component\\Validator\\Constraints\\Choice`          |
@@ -335,6 +334,14 @@ This is the message that you will receive if the ``multiple`` option is
 set to ``false`` and the underlying value is not in the valid array of
 choices.
 
+You can use the following parameters in this message:
+
++------------------+------------------------------------------------+
+| Parameter        | Description                                    |
++==================+================================================+
+| ``{{ value }}``  | The current (invalid) value                    |
++------------------+------------------------------------------------+
+
 multipleMessage
 ~~~~~~~~~~~~~~~
 
@@ -344,6 +351,14 @@ This is the message that you will receive if the ``multiple`` option is
 set to ``true`` and one of the values on the underlying array being checked
 is not in the array of valid choices.
 
+You can use the following parameters in this message:
+
++------------------+------------------------------------------------+
+| Parameter        | Description                                    |
++==================+================================================+
+| ``{{ value }}``  | The current (invalid) value                    |
++------------------+------------------------------------------------+
+
 minMessage
 ~~~~~~~~~~
 
@@ -351,6 +366,14 @@ minMessage
 
 This is the validation error message that's displayed when the user chooses
 too few choices per the `min`_ option.
+
+You can use the following parameters in this message:
+
++------------------+------------------------------------------------+
+| Parameter        | Description                                    |
++==================+================================================+
+| ``{{ limit }}``  | The lower limit of choices                     |
++------------------+------------------------------------------------+
 
 maxMessage
 ~~~~~~~~~~
@@ -360,13 +383,12 @@ maxMessage
 This is the validation error message that's displayed when the user chooses
 too many options per the `max`_ option.
 
-strict
-~~~~~~
+You can use the following parameters in this message:
 
-**type**: ``boolean`` **default**: ``true``
-
-The validator will also check the type of the input value. Specifically,
-this value is passed to as the third argument to the PHP :phpfunction:`in_array`
-method when checking to see if a value is in the valid choices array.
++------------------+------------------------------------------------+
+| Parameter        | Description                                    |
++==================+================================================+
+| ``{{ limit }}``  | The upper limit of choices                     |
++------------------+------------------------------------------------+
 
 .. include:: /reference/constraints/_payload-option.rst.inc

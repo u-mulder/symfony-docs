@@ -178,19 +178,23 @@ Selecting the Environment for Console Commands
 
 By default, Symfony commands are executed in whatever environment is defined by
 the ``APP_ENV`` environment variable (usually configured in your ``.env`` file).
+In previous Symfony versions you could use the ``--env`` (and ``--no-debug``)
+command line options to override this value. However, those options were
+deprecated in Symfony 4.2.
 
-Use the ``--env`` and ``--no-debug`` options to modify this behavior:
+Use the ``APP_ENV`` (and ``APP_DEBUG``) environment variables to change the
+environment and the debug behavior of the commands:
 
 .. code-block:: terminal
 
-    # 'dev' environment and debug enabled
+    # Symfony's default: 'dev' environment and debug enabled
     $ php bin/console command_name
 
     # 'prod' environment (debug is always disabled for 'prod')
-    $ php bin/console command_name --env=prod
+    $ APP_ENV=prod php bin/console command_name
 
     # 'test' environment and debug disabled
-    $ php bin/console command_name --env=test --no-debug
+    $ APP_ENV=test APP_DEBUG=0 php bin/console command_name
 
 .. index::
    single: Environments; Creating a new environment
@@ -199,7 +203,7 @@ Creating a new Environment
 --------------------------
 
 Since an environment is nothing more than a string that corresponds to a set of
-configuration, creating a new environment is quite easy.
+configuration, you can also create your own environments for specific purposes.
 
 Suppose, for example, that before deployment, you need to benchmark your
 application. One way to benchmark the application is to use near-production
@@ -263,7 +267,7 @@ environment through your browser:
 
     You can achieve this by using a special ``imports`` key:
 
-    .. configuration-block:
+    .. configuration-block::
 
         .. code-block:: yaml
 
@@ -355,7 +359,7 @@ includes the following:
 
 .. note::
 
-    You can easily change the directory location and name. For more information
+    You can change the directory location and name. For more information
     read the article :doc:`/configuration/override_dir_structure`.
 
 Going further

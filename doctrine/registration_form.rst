@@ -6,34 +6,29 @@
 How to Implement a Simple Registration Form
 ===========================================
 
-Creating a registration form is pretty easy - it *really* means just creating
-a form that will update some ``User`` model object (a Doctrine entity in this
+Creating a registration form works the same as creating any form. You configure
+the form to update some ``User`` model object (a Doctrine entity in this
 example) and then save it.
 
 First, make sure you have all the dependencies you need installed:
 
 .. code-block:: terminal
 
-    $ composer require doctrine form security validator
-
-.. tip::
-
-    The popular `FOSUserBundle`_ provides a registration form, reset password
-    form and other user management functionality.
+    $ composer require symfony/orm-pack symfony/form symfony/security-bundle symfony/validator
 
 If you don't already have a ``User`` entity and a working login system,
-first start with :doc:`/security/entity_provider`.
+first start by following :doc:`/security`.
 
 Your ``User`` entity will probably at least have the following fields:
 
 ``username``
     This will be used for logging in, unless you instead want your user to
-    :ref:`login via email <registration-form-via-email>` (in that case, this
+    :ref:`log in via email <registration-form-via-email>` (in that case, this
     field is unnecessary).
 
 ``email``
     A nice piece of information to collect. You can also allow users to
-    :ref:`login via email <registration-form-via-email>`.
+    :ref:`log in via email <registration-form-via-email>`.
 
 ``password``
     The encoded password.
@@ -94,6 +89,16 @@ With some validation added, your class may look something like this::
          */
         private $password;
 
+        /**
+         * @ORM\Column(type="array")
+         */
+        private $roles;
+
+        public function __construct()
+        {
+            $this->roles = array('ROLE_USER');
+        }
+
         // other properties and methods
 
         public function getEmail()
@@ -143,13 +148,20 @@ With some validation added, your class may look something like this::
             return null;
         }
 
-        // other methods, including security methods like getRoles()
+        public function getRoles()
+        {
+            return $this->roles;
+        }
+
+        public function eraseCredentials()
+        {
+        }
     }
 
 The :class:`Symfony\\Component\\Security\\Core\\User\\UserInterface` requires
 a few other methods and your ``security.yaml`` file needs to be configured
 properly to work with the ``User`` entity. For a more complete example, see
-the :ref:`Entity Provider <security-crete-user-entity>` article.
+the :doc:`Security Guide </security>`.
 
 .. _registration-password-max:
 
@@ -228,17 +240,17 @@ into the database::
 
     use App\Form\UserType;
     use App\Entity\User;
-    use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
     use Symfony\Component\HttpFoundation\Request;
     use Symfony\Component\Routing\Annotation\Route;
     use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
-    class RegistrationController extends Controller
+    class RegistrationController extends AbstractController
     {
         /**
          * @Route("/register", name="user_registration")
          */
-        public function registerAction(Request $request, UserPasswordEncoderInterface $passwordEncoder)
+        public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder)
         {
             // 1) build the form
             $user = new User();
@@ -307,7 +319,7 @@ encoder in the security configuration:
             ),
         ));
 
-In this case the recommended ``bcrypt`` algorithm is used. If needed, check out
+In this case the recommended `bcrypt`_ algorithm is used. If needed, check out
 the :ref:`user password encoding <security-encoding-user-password>` article.
 
 Next, create the template:
@@ -364,7 +376,7 @@ return the ``email`` property::
         // ...
     }
 
-Next, just update the ``providers`` section of your ``security.yaml`` file
+Next, update the ``providers`` section of your ``security.yaml`` file
 so that Symfony knows how to load your users via the ``email`` property on
 login. See :ref:`authenticating-someone-with-a-custom-entity-provider`.
 
@@ -403,5 +415,11 @@ To do this, add a ``termsAccepted`` field to your form, but set its
 The :ref:`constraints <form-option-constraints>` option is also used, which allows
 us to add validation, even though there is no ``termsAccepted`` property on ``User``.
 
+Manually Authenticating after Success
+-------------------------------------
+
+If you're using Guard authentication, you can :ref:`automatically authenticate <guard-manual-auth>`
+after registration is successful.
+
 .. _`CVE-2013-5750`: https://symfony.com/blog/cve-2013-5750-security-issue-in-fosuserbundle-login-form
-.. _`FOSUserBundle`: https://github.com/FriendsOfSymfony/FOSUserBundle
+.. _`bcrypt`: https://en.wikipedia.org/wiki/Bcrypt

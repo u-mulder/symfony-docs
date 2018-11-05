@@ -2,7 +2,7 @@ Bootstrap 4 Form Theme
 ======================
 
 Symfony provides several ways of integrating Bootstrap into your application. The
-most straightforward way is to just add the required ``<link>`` and ``<script>``
+most straightforward way is to add the required ``<link>`` and ``<script>``
 elements in your templates (usually you only include them in the main layout
 template which other templates extend from):
 
@@ -12,11 +12,11 @@ template which other templates extend from):
 
     {# beware that the blocks in your template may be named different #}
     {% block head_css %}
-        <!-- Copy CSS from https://getbootstrap.com/docs/4.0/getting-started/introduction/#css -->
+        <!-- Copy CSS from https://getbootstrap.com/docs/4.1/getting-started/introduction/#css -->
     {% endblock %}
     {% block head_js %}
-        <!-- Copy JavaScript from https://getbootstrap.com/docs/4.0/getting-started/introduction/#js -->
-    {% endblock head %}
+        <!-- Copy JavaScript from https://getbootstrap.com/docs/4.1/getting-started/introduction/#js -->
+    {% endblock %}
 
 If your application uses modern front-end practices, it's better to use
 :doc:`Webpack Encore </frontend>` and follow :doc:`this tutorial </frontend/encore/bootstrap>`
@@ -75,7 +75,7 @@ If you prefer to apply the Bootstrap styles on a form to form basis, include the
     {% block body %}
         <h1>User Sign Up:</h1>
         {{ form(form) }}
-    {% endblock body %}
+    {% endblock %}
 
 Accessibility
 -------------
@@ -97,8 +97,8 @@ and ``checkbox-custom`` respectively.
 
 .. code-block:: html+twig
 
-    {{ form_row(form.myRadio, {attr: {class: 'radio-custom'} }) }}
-    {{ form_row(form.myCheckbox, {attr: {class: 'checkbox-custom'} }) }}
+    {{ form_row(form.myRadio, {label_attr: {class: 'radio-custom'} }) }}
+    {{ form_row(form.myCheckbox, {label_attr: {class: 'checkbox-custom'} }) }}
 
 Labels and Errors
 -----------------
@@ -111,6 +111,6 @@ Form errors are rendered **inside** the ``<label>`` element to make sure there
 is a strong connection between the error and its ``<input>``, as required by the
 `WCAG 2.0 standard`_.
 
-.. _`their documentation`: https://getbootstrap.com/docs/4.0/
+.. _`their documentation`: https://getbootstrap.com/docs/4.1/
 .. _`WCAG 2.0 standard`: https://www.w3.org/TR/WCAG20/
-.. _`custom forms`: https://getbootstrap.com/docs/4.0/components/forms/#custom-forms
+.. _`custom forms`: https://getbootstrap.com/docs/4.1/components/forms/#custom-forms

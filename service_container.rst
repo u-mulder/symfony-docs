@@ -5,6 +5,11 @@
 Service Container
 =================
 
+.. admonition:: Screencast
+    :class: screencast
+
+    Do you prefer video tutorials? Check out the `Symfony Fundamentals screencast series`_.
+
 Your application is *full* of useful objects: a "Mailer" object might help you
 send emails while another object might help you save things to the database.
 Almost *everything* that your app "does" is actually done by one of these objects.
@@ -42,18 +47,19 @@ What other services are available? Find out by running:
 
 .. code-block:: terminal
 
-     $ php bin/console debug:autowiring
+    $ php bin/console debug:autowiring
 
-=============================================================== =====================================
-Class/Interface Type                                            Alias Service ID
-=============================================================== =====================================
-``Psr\Cache\CacheItemPoolInterface``                            alias for "cache.app.recorder"
-``Psr\Log\LoggerInterface``                                     alias for "monolog.logger"
-``Symfony\Component\EventDispatcher\EventDispatcherInterface``  alias for "debug.event_dispatcher"
-``Symfony\Component\HttpFoundation\RequestStack``               alias for "request_stack"
-``Symfony\Component\HttpFoundation\Session\SessionInterface``   alias for "session"
-``Symfony\Component\Routing\RouterInterface``                   alias for "router.default"
-=============================================================== =====================================
+    # this is just a *small* sample of the output...
+    ==========================================================  ==================================
+    Class/Interface Type                                        Alias Service ID
+    ==========================================================  ==================================
+    Psr\Cache\CacheItemPoolInterface                            alias for "cache.app.recorder"
+    Psr\Log\LoggerInterface                                     alias for "monolog.logger"
+    Symfony\Component\EventDispatcher\EventDispatcherInterface  alias for "debug.event_dispatcher"
+    Symfony\Component\HttpFoundation\RequestStack               alias for "request_stack"
+    Symfony\Component\HttpFoundation\Session\SessionInterface   alias for "session"
+    Symfony\Component\Routing\RouterInterface                   alias for "router.default"
+    ==========================================================  ==================================
 
 When you use these type-hints in your controller methods or inside your
 :ref:`own services <service-container-creating-service>`, Symfony will automatically
@@ -148,7 +154,7 @@ each time you ask for it.
                 # this creates a service per class whose id is the fully-qualified class name
                 App\:
                     resource: '../src/*'
-                    exclude: '../src/{Entity,Migrations,Tests}'
+                    exclude: '../src/{Entity,Migrations,Tests,Kernel.php}'
 
                 # ...
 
@@ -189,7 +195,12 @@ each time you ask for it.
     .. tip::
 
         The value of the ``resource`` and ``exclude`` options can be any valid
-        `glob pattern`_.
+        `glob pattern`_. The value of the ``exclude`` option can also be an
+        array of glob patterns.
+
+        .. versionadded:: 4.2
+            The feature to pass arrays of glob patterns to the ``exclude``
+            option was introduced in Symfony 4.2.
 
     Thanks to this configuration, you can automatically use any classes from the
     ``src/`` directory as a service, without needing to manually configure
@@ -571,6 +582,9 @@ But, you can control this and pass in a different logger:
             # explicitly configure the service
             App\Service\MessageGenerator:
                 arguments:
+                    # the '@' symbol is important: that's what tells the container
+                    # you want to pass the *service* whose id is 'monolog.logger.request',
+                    # and not just the *string* 'monolog.logger.request'
                     $logger: '@monolog.logger.request'
 
     .. code-block:: xml
@@ -612,13 +626,7 @@ For a full list of *all* possible services in the container, run:
 
 .. code-block:: terminal
 
-    php bin/console debug:container --show-private
-
-.. tip::
-
-    The ``@`` symbol is important: that's what tells the container you want to pass
-    the *service* whose id is ``monolog.logger.request``, and not just the *string*
-    ``monolog.logger.request``.
+    $ php bin/console debug:container
 
 .. _services-binding:
 
@@ -639,9 +647,17 @@ You can also use the ``bind`` keyword to bind specific arguments by name or type
                     # that's defined in this file (including controller arguments)
                     $adminEmail: 'manager@example.com'
 
+                    # pass this service to any $requestLogger argument for any
+                    # service that's defined in this file
+                    $requestLogger: '@monolog.logger.request'
+
                     # pass this service for any LoggerInterface type-hint for any
                     # service that's defined in this file
                     Psr\Log\LoggerInterface: '@monolog.logger.request'
+
+                    # optionally you can define both the name and type of the argument to match
+                    string $adminEmail: 'manager@example.com'
+                    Psr\Log\LoggerInterface $requestLogger: '@monolog.logger.request'
 
             # ...
 
@@ -657,7 +673,18 @@ You can also use the ``bind`` keyword to bind specific arguments by name or type
             <services>
                 <defaults autowire="true" autoconfigure="true" public="false">
                     <bind key="$adminEmail">manager@example.com</bind>
-                    <bind key="$logger"
+                    <bind key="$requestLogger"
+                        type="service"
+                        id="monolog.logger.request"
+                    />
+                    <bind key="Psr\Log\LoggerInterface"
+                        type="service"
+                        id="monolog.logger.request"
+                    />
+
+                    <!-- optionally you can define both the name and type of the argument to match -->
+                    <bind key="string $adminEmail">manager@example.com</bind>
+                    <bind key="Psr\Log\LoggerInterface $requestLogger"
                         type="service"
                         id="monolog.logger.request"
                     />
@@ -678,15 +705,23 @@ You can also use the ``bind`` keyword to bind specific arguments by name or type
             ->setPublic(true)
             ->setBindings(array(
                 '$adminEmail' => 'manager@example.com',
+                '$requestLogger' => new Reference('monolog.logger.request'),
                 LoggerInterface::class => new Reference('monolog.logger.request'),
+                // optionally you can define both the name and type of the argument to match
+                'string $adminEmail' => 'manager@example.com',
+                LoggerInterface::class.' $requestLogger' => new Reference('monolog.logger.request'),
             ))
         ;
 
 By putting the ``bind`` key under ``_defaults``, you can specify the value of *any*
 argument for *any* service defined in this file! You can bind arguments by name
-(e.g. ``$adminEmail``) or by type (e.g. ``Psr\Log\LoggerInterface``).
+(e.g. ``$adminEmail``), by type (e.g. ``Psr\Log\LoggerInterface``) or both
+(e.g. ``Psr\Log\LoggerInterface $requestLogger``).
 
-The ``bind`` config can be also be applied to specific services or when loading many
+.. versionadded:: 4.2
+    The feature to bind arguments by name and type was introduced in Symfony 4.2.
+
+The ``bind`` config can also be applied to specific services or when loading many
 services at once (i.e. :ref:`service-psr4-loader`).
 
 Getting Container Parameters as a Service
@@ -755,7 +790,7 @@ But, with ``autoconfigure: true``, you don't need the tag. In fact, if you're us
 the :ref:`default services.yaml config <service-container-services-load-example>`,
 you don't need to do *anything*: the service will be automatically loaded. Then,
 ``autoconfigure`` will add the ``twig.extension`` tag *for* you, because your class
-implements ``Twig_ExtensionInterface``. And thanks to ``autowire``, you can even add
+implements ``Twig\Extension\ExtensionInterface``. And thanks to ``autowire``, you can even add
 constructor arguments without any configuration.
 
 .. _container-public:
@@ -786,7 +821,7 @@ As a best practice, you should only create *private* services, which will happen
 automatically. And also, you should *not* use the ``$container->get()`` method to
 fetch public services.
 
-But, if you *do* need to make a service public, just override the ``public`` setting:
+But, if you *do* need to make a service public, override the ``public`` setting:
 
 .. configuration-block::
 
@@ -907,10 +942,10 @@ for classes under the same namespace:
 
 .. code-block:: yaml
 
-    # app/config/services.yml
+    # config/services.yaml
     services:
         App\Domain\:
-            resource: '../../src/Domain/*'
+            resource: '../src/Domain/*'
             # ...
 
 In order to have multiple definitions, add the ``namespace`` option and use any
@@ -918,16 +953,16 @@ unique string as the key of each service config:
 
 .. code-block:: yaml
 
-    # app/config/services.yml
+    # config/services.yaml
     services:
         command_handlers:
             namespace: App\Domain\
-            resource: '../../src/Domain/*/CommandHandler'
+            resource: '../src/Domain/*/CommandHandler'
             tags: [command_handler]
 
         event_subscribers:
             namespace: App\Domain\
-            resource: '../../src/Domain/*/EventSubscriber'
+            resource: '../src/Domain/*/EventSubscriber'
             tags: [event_subscriber]
 
 .. _services-explicitly-configure-wire-services:
@@ -999,7 +1034,7 @@ admin email. In this case, each needs to have a unique service id:
                     <argument>contact@example.com</argument>
                 </service>
 
-                <alias id="App\Updates\SiteUpdateManager" service="site_update_manager.superadmin" />
+                <service id="App\Updates\SiteUpdateManager" alias="site_update_manager.superadmin" />
             </services>
         </container>
 
@@ -1052,3 +1087,4 @@ Learn more
 .. _`service-oriented architecture`: https://en.wikipedia.org/wiki/Service-oriented_architecture
 .. _`Symfony Standard Edition (version 3.3) services.yaml`: https://github.com/symfony/symfony-standard/blob/3.3/app/config/services.yml
 .. _`glob pattern`: https://en.wikipedia.org/wiki/Glob_(programming)
+.. _`Symfony Fundamentals screencast series`: https://symfonycasts.com/screencast/symfony-fundamentals

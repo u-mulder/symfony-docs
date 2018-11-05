@@ -97,12 +97,7 @@ and increase web server performance:
             Order Allow,Deny
             Allow from All
 
-            <IfModule mod_rewrite.c>
-                Options -MultiViews
-                RewriteEngine On
-                RewriteCond %{REQUEST_FILENAME} !-f
-                RewriteRule ^(.*)$ index.php [QSA,L]
-            </IfModule>
+            FallbackResource /index.php
         </Directory>
 
         # uncomment the following lines if you install assets as symlinks
@@ -111,17 +106,15 @@ and increase web server performance:
         #     Options FollowSymlinks
         # </Directory>
 
-        # optionally disable the RewriteEngine for the asset directories
-        # which will allow apache to simply reply with a 404 when files are
-        # not found instead of passing the request into the full symfony stack
+        # optionally disable the fallback resource for the asset directories
+        # which will allow Apache to return a 404 error when files are
+        # not found instead of passing the request to Symfony
         <Directory /var/www/project/public/bundles>
-            <IfModule mod_rewrite.c>
-                RewriteEngine Off
-            </IfModule>
+            FallbackResource disabled
         </Directory>
         ErrorLog /var/log/apache2/project_error.log
         CustomLog /var/log/apache2/project_access.log combined
-        
+
         # optionally set the value of the environment variables used in the application
         #SetEnv APP_ENV prod
         #SetEnv APP_SECRET <app-secret-id>
@@ -176,7 +169,7 @@ listen on. Each pool can also be run under a different UID and GID:
     group = www-data
 
     ; use a unix domain socket
-    listen = /var/run/php7.1-fpm.sock
+    listen = /var/run/php/php7.1-fpm.sock
 
     ; or listen on a TCP socket
     listen = 127.0.0.1:9000
@@ -184,7 +177,7 @@ listen on. Each pool can also be run under a different UID and GID:
 Using mod_proxy_fcgi with Apache 2.4
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you are running Apache 2.4, you can easily use ``mod_proxy_fcgi`` to pass
+If you are running Apache 2.4, you can use ``mod_proxy_fcgi`` to pass
 incoming requests to PHP-FPM. Configure PHP-FPM to listen on a TCP or Unix socket,
 enable ``mod_proxy`` and ``mod_proxy_fcgi`` in your Apache configuration, and
 use the ``SetHandler`` directive to pass requests for PHP files to PHP FPM:
@@ -274,7 +267,7 @@ instead:
 
 .. code-block:: apache
 
-    FastCgiExternalServer /usr/lib/cgi-bin/php7-fcgi -socket /var/run/php7.1-fpm.sock -pass-header Authorization
+    FastCgiExternalServer /usr/lib/cgi-bin/php7-fcgi -socket /var/run/php/php7.1-fpm.sock -pass-header Authorization
 
 .. _web-server-nginx:
 
@@ -295,7 +288,7 @@ The **minimum configuration** to get your application running under Nginx is:
         }
 
         location ~ ^/index\.php(/|$) {
-            fastcgi_pass unix:/var/run/php7.1-fpm.sock;
+            fastcgi_pass unix:/var/run/php/php7.1-fpm.sock;
             fastcgi_split_path_info ^(.+\.php)(/.*)$;
             include fastcgi_params;
 

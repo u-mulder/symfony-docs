@@ -17,7 +17,7 @@ example:
         services:
             App\Twig\AppExtension:
                 public: false
-                tags: [twig.extension]
+                tags: ['twig.extension']
 
     .. code-block:: xml
 
@@ -60,27 +60,66 @@ Autoconfiguring Tags
 
 If you enable :ref:`autoconfigure <services-autoconfigure>`, then some tags are
 automatically applied for you. That's true for the ``twig.extension`` tag: the
-container sees that your class extends ``Twig_Extension`` (or more accurately,
-that it implements ``Twig_ExtensionInterface``) and adds the tag for you.
+container sees that your class extends ``AbstractExtension`` (or more accurately,
+that it implements ``ExtensionInterface``) and adds the tag for you.
 
-.. tip::
+If you want to apply tags automatically for your own services, use the
+``_instanceof`` option:
 
-    To apply a tag to all your autoconfigured services extending a class or implementing an
-    interface, call the :method:`Symfony\\Component\\DependencyInjection\\ContainerBuilder::registerForAutoconfiguration`
-    method in an :doc:`extension </bundles/extension>` or from your kernel::
+.. configuration-block::
 
-        // src/Kernel.php
-        class Kernel extends Kernel
+    .. code-block:: yaml
+
+        # config/services.yaml
+        services:
+            # this config only applies to the services created by this file
+            _instanceof:
+                # services whose classes are instances of CustomInterface will be tagged automatically
+                App\Security\CustomInterface:
+                    tags: ['app.custom_tag']
+            # ...
+
+    .. code-block:: xml
+
+        <!-- config/services.xml -->
+        <?xml version="1.0" encoding="utf-8"?>
+        <container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+            <services>
+                <!-- this config only applies to the services created by this file -->
+                <instanceof id="App\Security\CustomInterface" autowire="true">
+                    <!-- services whose classes are instances of CustomInterface will be tagged automatically -->
+                    <tag name="app.custom_tag" />
+                </instanceof>
+            </services>
+        </container>
+
+    .. code-block:: php
+
+        // config/services.php
+        use App\Security\CustomInterface;
+        // ...
+
+        // services whose classes are instances of CustomInterface will be tagged automatically
+        $container->registerForAutoconfiguration(CustomInterface::class)
+            ->addTag('app.custom_tag')
+            ->setAutowired(true);
+
+For more advanced needs, you can define the automatic tags using the
+:method:`Symfony\\Component\\DependencyInjection\\ContainerBuilder::registerForAutoconfiguration`
+method in an :doc:`extension </bundles/extension>` or from your kernel::
+
+    // src/Kernel.php
+    class Kernel extends BaseKernel
+    {
+        // ...
+
+        protected function build(ContainerBuilder $container)
         {
-            // ...
-
-            protected function build(ContainerBuilder $container)
-            {
-                $container->registerForAutoconfiguration(CustomInterface::class)
-                    ->addTag('app.custom_tag')
-                ;
-            }
+            $container->registerForAutoconfiguration(CustomInterface::class)
+                ->addTag('app.custom_tag')
+            ;
         }
+    }
 
 Creating custom Tags
 --------------------
@@ -162,10 +201,10 @@ For example, you may add the following transports as services:
         services:
             Swift_SmtpTransport:
                 arguments: ['%mailer_host%']
-                tags: [app.mail_transport]
+                tags: ['app.mail_transport']
 
             Swift_SendmailTransport:
-                tags: [app.mail_transport]
+                tags: ['app.mail_transport']
 
     .. code-block:: xml
 
@@ -317,11 +356,11 @@ To answer this, change the service declaration:
             Swift_SmtpTransport:
                 arguments: ['%mailer_host%']
                 tags:
-                    - { name: app.mail_transport, alias: smtp }
+                    - { name: 'app.mail_transport', alias: 'smtp' }
 
             Swift_SendmailTransport:
                 tags:
-                    - { name: app.mail_transport, alias: sendmail }
+                    - { name: 'app.mail_transport', alias: 'sendmail' }
 
     .. code-block:: xml
 
@@ -368,13 +407,13 @@ To answer this, change the service declaration:
             # Compact syntax
             Swift_SendmailTransport:
                 class: \Swift_SendmailTransport
-                tags: [app.mail_transport]
+                tags: ['app.mail_transport']
 
             # Verbose syntax
             Swift_SendmailTransport:
                 class: \Swift_SendmailTransport
                 tags:
-                    - { name: app.mail_transport }
+                    - { name: 'app.mail_transport' }
 
 Notice that you've added a generic ``alias`` key to the tag. To actually
 use this, update the compiler::
@@ -424,10 +463,10 @@ first  constructor argument to the ``App\HandlerCollection`` service:
         # config/services.yaml
         services:
             App\Handler\One:
-                tags: [app.handler]
+                tags: ['app.handler']
 
             App\Handler\Two:
-                tags: [app.handler]
+                tags: ['app.handler']
 
             App\HandlerCollection:
                 # inject all services tagged with app.handler as first argument
@@ -500,7 +539,7 @@ application handlers.
             services:
                 App\Handler\One:
                     tags:
-                        - { name: app.handler, priority: 20 }
+                        - { name: 'app.handler', priority: 20 }
 
         .. code-block:: xml
 

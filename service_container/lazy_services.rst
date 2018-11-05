@@ -6,7 +6,7 @@ Lazy Services
 
 .. seealso::
 
-    Another way to inject services lazily is via a :doc:`service locator </service_container/service_locators>`.
+    Another way to inject services lazily is via a :doc:`service subscriber </service_container/service_subscribers_locators>`.
 
 Why Lazy Services?
 ------------------
@@ -26,21 +26,12 @@ until you interact with the proxy in some way.
 Installation
 ------------
 
-In order to use the lazy service instantiation, you will first need to install
-the ``ocramius/proxy-manager`` package:
+In order to use the lazy service instantiation, you will need to install the
+``symfony/proxy-manager-bridge`` package:
 
 .. code-block:: terminal
 
-    $ composer require ocramius/proxy-manager
-
-.. note::
-
-    If you're not using the full-stack framework, you also have to install the
-    `ProxyManager bridge`_
-
-    .. code-block:: terminal
-
-        $ composer require symfony/proxy-manager-bridge
+    $ composer require symfony/proxy-manager-bridge
 
 Configuration
 -------------
@@ -53,8 +44,8 @@ You can mark the service as ``lazy`` by manipulating its definition:
 
         # config/services.yaml
         services:
-           App\Twig\AppExtension:
-             lazy:  true
+            App\Twig\AppExtension:
+                lazy:  true
 
     .. code-block:: xml
 
@@ -85,7 +76,7 @@ same happens when calling ``Container::get()`` directly.
 The actual class will be instantiated as soon as you try to interact with the
 service (e.g. call one of its methods).
 
-To check if your proxy works you can simply check the interface of the
+To check if your proxy works you can check the interface of the
 received object::
 
     dump(class_implements($service));
@@ -94,8 +85,8 @@ received object::
 .. note::
 
     If you don't install the `ProxyManager bridge`_ and the
-    `ocramius/proxy-manager`_, the container will just skip over the ``lazy``
-    flag and simply instantiate the service as it would normally do.
+    `ocramius/proxy-manager`_, the container will skip over the ``lazy``
+    flag and directly instantiate the service as it would normally do.
 
 Additional Resources
 --------------------

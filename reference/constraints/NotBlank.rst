@@ -2,7 +2,7 @@ NotBlank
 ========
 
 Validates that a value is not blank - meaning not equal to a blank string,
-a blank array or ``null``::
+a blank array, ``null`` or ``false``::
 
     if (false === $value || (empty($value) && '0' != $value)) {
         // validation will fail
@@ -93,5 +93,13 @@ message
 **type**: ``string`` **default**: ``This value should not be blank.``
 
 This is the message that will be shown if the value is blank.
+
+You can use the following parameters in this message:
+
++-----------------+-----------------------------+
+| Parameter       | Description                 |
++=================+=============================+
+| ``{{ value }}`` | The current (invalid) value |
++-----------------+-----------------------------+
 
 .. include:: /reference/constraints/_payload-option.rst.inc

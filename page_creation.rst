@@ -8,7 +8,7 @@ Create your First Page in Symfony
 =================================
 
 Creating a new page - whether it's an HTML page or a JSON endpoint - is a
-simple two-step process:
+two-step process:
 
 #. **Create a route**: A route is the URL (e.g. ``/about``) to your page and
    points to a controller;
@@ -18,10 +18,11 @@ simple two-step process:
    create a Symfony ``Response`` object, which can hold HTML content, a JSON
    string or even a binary file like an image or PDF.
 
-.. seealso::
+.. admonition:: Screencast
+    :class: screencast
 
     Do you prefer video tutorials? Check out the `Stellar Development with Symfony`_
-    screencast series from KnpUniversity.
+    screencast series.
 
 .. seealso::
 
@@ -53,7 +54,7 @@ random) number and prints it. To do that, create a "Controller class" and a
     {
         public function number()
         {
-            $number = mt_rand(0, 100);
+            $number = random_int(0, 100);
 
             return new Response(
                 '<html><body>Lucky number: '.$number.'</body></html>'
@@ -89,6 +90,14 @@ to creating a page?
 #. *Create a controller*: This is a function where *you* build the page and ultimately
    return a ``Response`` object. You'll learn more about :doc:`controllers </controller>`
    in their own section, including how to return JSON responses.
+
+.. tip::
+
+    To create controllers faster, let Symfony generate it for you:
+
+    .. code-block:: terminal
+
+        $ php bin/console make:controller
 
 .. _annotation-routes:
 
@@ -139,7 +148,7 @@ that Flex resolves to ``sensio/framework-extra-bundle``.
 
 Second, after this package was downloaded, Flex executed a *recipe*, which is a
 set of automated instructions that tell Symfony how to integrate an external
-package. Flex recipes exist for many packages (see `symfony.sh`_) and have the ability
+package. `Flex recipes`_ exist for many packages and have the ability
 to do a lot, like adding configuration files, creating directories, updating ``.gitignore``
 and adding new config to your ``.env`` file. Flex *automates* the installation of
 packages so you can get back to coding.
@@ -167,7 +176,7 @@ To get a list of *all* of the routes in your system, use the ``debug:router`` co
 
     $ php bin/console debug:router
 
-You should see your *one* route so far:
+You should see your ``app_lucky_number`` route at the very top:
 
 ================== ======== ======== ====== ===============
  Name               Method   Scheme   Host   Path
@@ -175,28 +184,21 @@ You should see your *one* route so far:
  app_lucky_number   ANY      ANY      ANY    /lucky/number
 ================== ======== ======== ====== ===============
 
+You will also see debugging routes below ``app_lucky_number`` -- more on
+the debugging routes in the next section.
+
 You'll learn about many more commands as you continue!
 
 The Web Debug Toolbar: Debugging Dream
 --------------------------------------
 
 One of Symfony's *killer* features is the Web Debug Toolbar: a bar that displays
-a *huge* amount of debugging information along the bottom of your page while developing.
+a *huge* amount of debugging information along the bottom of your page while developing. This is all
+included out of the box using a package called ``symfony/profiler-pack``.
 
-To use the web debug toolbar, just install it:
-
-.. code-block:: terminal
-
-    $ composer require --dev profiler
-
-As soon as this finishes, refresh your page. You should see a black bar along the
-bottom of the page. You'll learn more about all the information it holds along the
-way, but feel free to experiment: hover over and click the different icons to get
-information about routing, performance, logging and more.
-
-The ``profiler`` package is also a great example of Flex! After downloading the
-package, the recipe created several configuration files so that the web debug toolbar
-worked instantly.
+You will see a black bar along the bottom of the page. You'll learn more about all the information it holds
+along the way, but feel free to experiment: hover over and click
+the different icons to get information about routing, performance, logging and more.
 
 Rendering a Template
 --------------------
@@ -205,24 +207,18 @@ If you're returning HTML from your controller, you'll probably want to render
 a template. Fortunately, Symfony comes with `Twig`_: a templating language that's
 easy, powerful and actually quite fun.
 
-First, install Twig:
-
-.. code-block:: terminal
-
-    $ composer require twig
-
-Second, make sure that ``LuckyController`` extends Symfony's base
-:class:`Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller` class:
+Make sure that ``LuckyController`` extends Symfony's base
+:class:`Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController` class:
 
 .. code-block:: diff
 
     // src/Controller/LuckyController.php
 
     // ...
-    + use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+    + use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
     - class LuckyController
-    + class LuckyController extends Controller
+    + class LuckyController extends AbstractController
     {
         // ...
     }
@@ -233,18 +229,18 @@ variable so you can use it in Twig::
     // src/Controller/LuckyController.php
 
     // ...
-    class LuckyController extends Controller
+    class LuckyController extends AbstractController
     {
         /**
          * @Route("/lucky/number")
          */
         public function number()
         {
-            $number = mt_rand(0, 100);
+            $number = random_int(0, 100);
 
-            return $this->render('lucky/number.html.twig', array(
+            return $this->render('lucky/number.html.twig', [
                 'number' => $number,
-            ));
+            ]);
         }
     }
 
@@ -321,6 +317,7 @@ Ok, time to finish mastering the fundamentals by reading these articles:
 * :doc:`/routing`
 * :doc:`/controller`
 * :doc:`/templating`
+* :doc:`/configuration`
 
 Then, learn about other important topics like the
 :doc:`service container </service_container>`,
@@ -343,7 +340,7 @@ Go Deeper with HTTP & Framework Fundamentals
 
     introduction/*
 
-.. _`Twig`: http://twig.sensiolabs.org
+.. _`Twig`: https://twig.symfony.com
 .. _`Composer`: https://getcomposer.org
-.. _`Stellar Development with Symfony`: https://knpuniversity.com/screencast/symfony/setup
-.. _`symfony.sh`: https://symfony.sh/
+.. _`Stellar Development with Symfony`: https://symfonycasts.com/screencast/symfony/setup
+.. _`Flex recipes`: https://flex.symfony.com

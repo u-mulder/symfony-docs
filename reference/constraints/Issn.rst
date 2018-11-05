@@ -76,6 +76,8 @@ Basic Usage
             }
         }
 
+.. include:: /reference/constraints/_empty-values-are-valid.rst.inc
+
 Options
 -------
 
@@ -85,6 +87,14 @@ message
 **type**: ``String`` default: ``This value is not a valid ISSN.``
 
 The message shown if the given value is not a valid ISSN.
+
+You can use the following parameters in this message:
+
++-----------------+-----------------------------+
+| Parameter       | Description                 |
++=================+=============================+
+| ``{{ value }}`` | The current (invalid) value |
++-----------------+-----------------------------+
 
 caseSensitive
 ~~~~~~~~~~~~~

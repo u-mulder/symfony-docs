@@ -26,6 +26,12 @@ Alternatively, you can clone the `<https://github.com/symfony/dom-crawler>`_ rep
 Usage
 -----
 
+.. seealso::
+
+    This article explains how to use the DomCrawler features as an independent
+    component in any PHP application. Read the :ref:`Symfony Functional Tests <functional-tests>`
+    article to learn about how to use it when creating Symfony tests.
+
 The :class:`Symfony\\Component\\DomCrawler\\Crawler` class provides methods
 to query and manipulate HTML and XML documents.
 
@@ -69,7 +75,7 @@ tree.
 Node Filtering
 ~~~~~~~~~~~~~~
 
-Using XPath expressions is really easy::
+Using XPath expressions, you can select specific nodes within the document::
 
     $crawler = $crawler->filterXPath('descendant-or-self::body/p');
 
@@ -77,8 +83,8 @@ Using XPath expressions is really easy::
 
     ``DOMXPath::query`` is used internally to actually perform an XPath query.
 
-Filtering is even easier if you have the CssSelector component installed.
-This allows you to use jQuery-like selectors to traverse::
+If you prefer CSS selectors over XPath, install the CssSelector component.
+It allows you to use jQuery-like selectors to traverse::
 
     $crawler = $crawler->filter('body > p');
 
@@ -175,6 +181,13 @@ Get all the child or parent nodes::
 
     $crawler->filter('body')->children();
     $crawler->filter('body > p')->parents();
+
+Get all the direct child nodes matching a CSS selector::
+
+    $crawler->filter('body')->children('p.lorem');
+
+.. versionadded:: 4.2
+    The optional selector in ``children($selector)`` method was introduced in Symfony 4.2.
 
 .. note::
 
@@ -389,9 +402,13 @@ Forms
 ~~~~~
 
 Special treatment is also given to forms. A ``selectButton()`` method is
-available on the Crawler which returns another Crawler that matches a button
-(``input[type=submit]``, ``input[type=image]``, or a ``button``) with the
-given text. This method is especially useful because you can use it to return
+available on the Crawler which returns another Crawler that matches ``<button>``
+or ``<input type="submit">`` or ``<input type="button">`` elements (or an
+``<img>`` element inside them). The string given as argument is looked for in
+the ``id``, ``alt``, ``name``, and ``value`` attributes and the text content of
+those elements.
+
+This method is especially useful because you can use it to return
 a :class:`Symfony\\Component\\DomCrawler\\Form` object that represents the
 form that the button lives in::
 

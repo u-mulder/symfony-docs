@@ -27,6 +27,8 @@ photos).
 | options     | - `empty_data`_                                                             |
 |             | - `error_bubbling`_                                                         |
 |             | - `error_mapping`_                                                          |
+|             | - `help`_                                                                   |
+|             | - `help_attr`_                                                              |
 |             | - `label`_                                                                  |
 |             | - `label_attr`_                                                             |
 |             | - `label_format`_                                                           |
@@ -68,47 +70,25 @@ address as its own input text box::
 
 The simplest way to render this is all at once:
 
-.. configuration-block::
+.. code-block:: twig
 
-    .. code-block:: twig
-
-        {{ form_row(form.emails) }}
-
-    .. code-block:: php
-
-        <?php echo $view['form']->row($form['emails']) ?>
+    {{ form_row(form.emails) }}
 
 A much more flexible method would look like this:
 
-.. configuration-block::
+.. code-block:: html+twig
 
-    .. code-block:: html+twig
+    {{ form_label(form.emails) }}
+    {{ form_errors(form.emails) }}
 
-        {{ form_label(form.emails) }}
-        {{ form_errors(form.emails) }}
-
-        <ul>
-        {% for emailField in form.emails %}
-            <li>
-                {{ form_errors(emailField) }}
-                {{ form_widget(emailField) }}
-            </li>
-        {% endfor %}
-        </ul>
-
-    .. code-block:: html+php
-
-        <?php echo $view['form']->label($form['emails']) ?>
-        <?php echo $view['form']->errors($form['emails']) ?>
-
-        <ul>
-        <?php foreach ($form['emails'] as $emailField): ?>
-            <li>
-                <?php echo $view['form']->errors($emailField) ?>
-                <?php echo $view['form']->widget($emailField) ?>
-            </li>
-        <?php endforeach ?>
-        </ul>
+    <ul>
+    {% for emailField in form.emails %}
+        <li>
+            {{ form_errors(emailField) }}
+            {{ form_widget(emailField) }}
+        </li>
+    {% endfor %}
+    </ul>
 
 In both cases, no input fields would render unless your ``emails`` data
 array already contained some emails.
@@ -167,7 +147,6 @@ you need is this JavaScript code:
     // add-collection-widget.js
     jQuery(document).ready(function () {
         jQuery('.add-another-collection-widget').click(function (e) {
-            e.preventDefault();
             var list = jQuery(jQuery(this).attr('data-list'));
             // Try to find the counter of the list
             var counter = list.data('widget-counter') | list.children().length;
@@ -210,9 +189,9 @@ And update the template as follows:
         {% endfor %}
         </ul>
 
-        <a href="#"
+        <button type="button"
             class="add-another-collection-widget"
-            data-list="#email-fields-list">Add another email</a>
+            data-list="#email-fields-list">Add another email</button>
 
         {# ... #}
     {{ form_end(form) }}
@@ -343,13 +322,13 @@ type::
 entry_type
 ~~~~~~~~~~
 
-**type**: ``string`` or :class:`Symfony\\Component\\Form\\FormTypeInterface` **default**: Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType
+**type**: ``string`` **default**: ``Symfony\\Component\\Form\\Extension\\Core\\Type\\TextType``
 
 This is the field type for each item in this collection (e.g. ``TextType``,
 ``ChoiceType``, etc). For example, if you have an array of email addresses,
 you'd use the :doc:`EmailType </reference/forms/types/email>`. If you want
-to embed a collection of some other form, create a new instance of your
-form type and pass it as this option.
+to embed a collection of some other form, pass the form type class as this
+option (e.g. ``MyFormType::class``).
 
 prototype
 ~~~~~~~~~
@@ -368,15 +347,9 @@ be added to your underlying array due to the `allow_add`_ option.
 The prototype field can be rendered via the ``prototype`` variable in the
 collection field:
 
-.. configuration-block::
+.. code-block:: twig
 
-    .. code-block:: twig
-
-        {{ form_row(form.emails.vars.prototype) }}
-
-    .. code-block:: php
-
-        <?php echo $view['form']->row($form['emails']->vars['prototype']) ?>
+    {{ form_row(form.emails.vars.prototype) }}
 
 Note that all you really need is the "widget", but depending on how you're
 rendering your form, having the entire "form row" may be easier for you.
@@ -447,6 +420,10 @@ error_bubbling
 .. include:: /reference/forms/types/options/_error_bubbling_body.rst.inc
 
 .. include:: /reference/forms/types/options/error_mapping.rst.inc
+
+.. include:: /reference/forms/types/options/help.rst.inc
+
+.. include:: /reference/forms/types/options/help_attr.rst.inc
 
 .. include:: /reference/forms/types/options/label.rst.inc
 

@@ -77,6 +77,8 @@ Basic Usage
             }
         }
 
+.. include:: /reference/constraints/_empty-values-are-valid.rst.inc
+
 Options
 -------
 
@@ -86,6 +88,14 @@ message
 **type**: ``string`` **default**: ``This value is not a valid URL.``
 
 This message is shown if the URL is invalid.
+
+You can use the following parameters in this message:
+
++-----------------+-----------------------------+
+| Parameter       | Description                 |
++=================+=============================+
+| ``{{ value }}`` | The current (invalid) value |
++-----------------+-----------------------------+
 
 .. configuration-block::
 

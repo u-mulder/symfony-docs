@@ -29,7 +29,7 @@ endpoint for filesystem operations::
     $fileSystem = new Filesystem();
 
     try {
-        $fileSystem->mkdir('/tmp/random/dir/'.mt_rand());
+        $fileSystem->mkdir(sys_get_temp_dir().'/'.random_int(0, 1000));
     } catch (IOExceptionInterface $exception) {
         echo "An error occurred while creating your directory at ".$exception->getPath();
     }
@@ -78,10 +78,11 @@ exists
 presence of one or more files or directories and returns ``false`` if any of
 them is missing::
 
-    // this directory exists, return true
+    // if this absolute directory exists, returns true
     $fileSystem->exists('/tmp/photos');
 
-    // rabbit.jpg exists, bottle.png does not exist, return false
+    // if rabbit.jpg exists and bottle.png does not exist, returns false
+    // non-absolute paths are relative to the directory where the running PHP script is stored
     $fileSystem->exists(array('rabbit.jpg', 'bottle.png'));
 
 .. note::
@@ -222,10 +223,10 @@ The :method:`Symfony\\Component\\Filesystem\\Filesystem::readlink` method provid
 by the Filesystem component always behaves in the same way::
 
     // returns the next direct target of the link without considering the existence of the target
-    $fs->readlink('/path/to/link');
+    $fileSystem->readlink('/path/to/link');
 
     // returns its absolute fully resolved final version of the target (if there are nested links, they are resolved)
-    $fs->readlink('/path/to/link', true);
+    $fileSystem->readlink('/path/to/link', true);
 
 Its behavior is the following::
 
@@ -297,7 +298,7 @@ appendToFile
 :method:`Symfony\\Component\\Filesystem\\Filesystem::appendToFile` adds new
 contents at the end of some file::
 
-    $fs->appendToFile('logs.txt', 'Email sent to user@example.com');
+    $fileSystem->appendToFile('logs.txt', 'Email sent to user@example.com');
 
 If either the file or its containing directory doesn't exist, this method
 creates them before appending the contents.

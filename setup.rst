@@ -4,10 +4,11 @@
 Installing & Setting up the Symfony Framework
 =============================================
 
-.. seealso::
+.. admonition:: Screencast
+    :class: screencast
 
     Do you prefer video tutorials? Check out the `Stellar Development with Symfony`_
-    screencast series from KnpUniversity.
+    screencast series.
 
 To create your new Symfony application, first make sure you're using PHP 7.1 or higher
 and have `Composer`_ installed. If you don't, start by :doc:`installing Composer globally </setup/composer>`
@@ -23,24 +24,32 @@ This will create a new ``my-project`` directory, download some dependencies into
 it and even generate the basic directories and files you'll need to get started.
 In other words, your new app is ready!
 
+.. tip::
+
+    The ``website-skeleton`` is optimized for traditional web applications. If
+    you are building microservices, console applications or APIs, consider
+    using the much simpler ``skeleton`` project:
+
+    .. code-block:: terminal
+
+        $ composer create-project symfony/skeleton my-project
+
+        # optional: install the web server bundle (explained next)
+        $ cd my-project
+        $ composer require symfony/web-server-bundle --dev
+
 Running your Symfony Application
 --------------------------------
 
 On production, you should use a web server like Nginx or Apache
 (see :doc:`configuring a web server to run Symfony </setup/web_server_configuration>`).
-But for development, it's even easier to use the :doc:`Symfony PHP web server <setup/built_in_web_server>`.
+But for development, it's convenient to use the :doc:`Symfony PHP web server <setup/built_in_web_server>`.
 
-First, move into your new project and install the server:
+Move into your new project and start the server:
 
 .. code-block:: terminal
 
     $ cd my-project
-    $ composer require server --dev
-
-To start the server, run:
-
-.. code-block:: terminal
-
     $ php bin/console server:run
 
 Open your browser and navigate to ``http://localhost:8000/``. If everything is working,
@@ -67,12 +76,13 @@ by pressing ``Ctrl+C`` from your terminal.
 Storing your Project in git
 ---------------------------
 
-Storing your project in services like GitHub, GitLab and Bitbucket is easy! New
-Symfony projects include an empty Git repository, so you can add everything and
-commit:
+Storing your project in services like GitHub, GitLab and Bitbucket works like with
+any other code project! Init a new repository with ``Git`` and you are ready to push
+to your remote:
 
 .. code-block:: terminal
 
+    $ git init
     $ git add .
     $ git commit -m "Initial commit"
 
@@ -85,9 +95,9 @@ that file when needed.
 Setting up an Existing Symfony Project
 --------------------------------------
 
-If you're working on an existing Symfony application, you'll just need to do a few
-things to get your project setup. Assuming your team uses Git, you can setup your
-project with the following commands:
+If you're working on an existing Symfony application, you only need to get the
+project code and install the dependencies with Composer. Assuming your team uses Git,
+setup your project with the following commands:
 
 .. code-block:: terminal
 
@@ -105,14 +115,14 @@ few other project-specific tasks (e.g. creating database schema).
 Checking for Security Vulnerabilities
 -------------------------------------
 
-Symfony provides a utility called the "Security Checker" (or ``sec-checker``) to
-check whether your project's dependencies contain any known security
-vulnerability. Run this command to install it in your application:
+Symfony provides a utility called the "Security Checker" to check whether your
+project's dependencies contain any known security vulnerability. Run this
+command to install it in your application:
 
 .. code-block:: terminal
 
     $ cd my-project/
-    $ composer require sec-checker
+    $ composer require sensiolabs/security-checker --dev
 
 From now on, this utility will be run automatically whenever you install or
 update any dependency in the application. If a dependency contains a vulnerability,
@@ -150,8 +160,7 @@ Go Deeper with Setup
     setup/composer
     setup/*
 
-.. _`Stellar Development with Symfony`: http://knpuniversity.com/screencast/symfony
+.. _`Stellar Development with Symfony`: http://symfonycasts.com/screencast/symfony
 .. _`Composer`: https://getcomposer.org/
-.. _`technical requirements`: https://symfony.com/doc/current/reference/requirements.html
-.. _`The Symfony Demo application`: https://github.com/symfony/symfony-demo
+.. _`The Symfony Demo application`: https://github.com/symfony/demo
 .. _`symfony/symfony-demo`: https://github.com/symfony/demo

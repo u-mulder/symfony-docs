@@ -67,7 +67,7 @@ The most common way to listen to an event is to register an **event listener**::
     Check out the :doc:`Symfony events reference </reference/events>` to see
     what type of object each event provides.
 
-Now that the class is created, you just need to register it as a service and
+Now that the class is created, you need to register it as a service and
 notify Symfony that it is a "listener" on the ``kernel.exception`` event by
 using a special "tag":
 
@@ -127,7 +127,7 @@ listener class:
 
     There is an optional attribute for the ``kernel.event_listener`` tag called
     ``priority``, which defaults to ``0`` and it controls the order in which
-    listeners are executed (the highest the priority, the earlier a listener is
+    listeners are executed (the higher the priority, the earlier a listener is
     executed). This is useful when you need to guarantee that one listener is
     executed before another. The priorities of the internal Symfony listeners
     usually range from ``-255`` to ``255`` but your own listeners can use any

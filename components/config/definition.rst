@@ -18,20 +18,21 @@ be a boolean value"):
 
 .. code-block:: yaml
 
-    auto_connect: true
-    default_connection: mysql
-    connections:
-        mysql:
-            host:     localhost
-            driver:   mysql
-            username: user
-            password: pass
-        sqlite:
-            host:     localhost
-            driver:   sqlite
-            memory:   true
-            username: user
-            password: pass
+    database:
+        auto_connect: true
+        default_connection: mysql
+        connections:
+            mysql:
+                host:     localhost
+                driver:   mysql
+                username: user
+                password: pass
+            sqlite:
+                host:     localhost
+                driver:   sqlite
+                memory:   true
+                username: user
+                password: pass
 
 When loading multiple configuration files, it should be possible to merge
 and overwrite some values. Other values should not be merged and stay as
@@ -58,14 +59,17 @@ implements the :class:`Symfony\\Component\\Config\\Definition\\ConfigurationInte
     {
         public function getConfigTreeBuilder()
         {
-            $treeBuilder = new TreeBuilder();
-            $rootNode = $treeBuilder->root('database');
+            $treeBuilder = new TreeBuilder('database');
 
             // ... add node definitions to the root of the tree
+            // $treeBuilder->getRootNode()->...
 
             return $treeBuilder;
         }
     }
+
+.. versionadded:: 4.2
+    Not passing the root node name to ``TreeBuilder`` was deprecated in Symfony 4.2.
 
 Adding Node Definitions to the Tree
 -----------------------------------
@@ -533,10 +537,9 @@ tree with ``append()``::
 
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('database');
+        $treeBuilder = new TreeBuilder('database');
 
-        $rootNode
+        $treeBuilder->getRootNode()
             ->children()
                 ->arrayNode('connection')
                     ->children()
@@ -563,10 +566,9 @@ tree with ``append()``::
 
     public function addParametersNode()
     {
-        $treeBuilder = new TreeBuilder();
-        $node = $treeBuilder->root('parameters');
+        $treeBuilder = new TreeBuilder('parameters');
 
-        $node
+        $treeBuilder->getRootNode()
             ->isRequired()
             ->requiresAtLeastOneElement()
             ->useAttributeAsKey('name')
@@ -794,10 +796,9 @@ Configuring the Node Path Separator
 
 Consider the following config builder example::
 
-    $treeBuilder = new TreeBuilder();
-    $rootNode = $treeBuilder->root('database');
+    $treeBuilder = new TreeBuilder('database');
 
-    $rootNode
+    $treeBuilder->getRootNode()
         ->children()
             ->arrayNode('connection')
                 ->children()

@@ -104,10 +104,10 @@ some developers configure form buttons in the controller::
     use App\Entity\Post;
     use App\Form\PostType;
     use Symfony\Component\HttpFoundation\Request;
-    use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+    use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
     use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
-    class PostController extends Controller
+    class PostController extends AbstractController
     {
         // ...
 
@@ -136,6 +136,35 @@ view layer:
 
         <input type="submit" class="btn" value="Create" />
     {{ form_end(form) }}
+
+Validation
+----------
+
+The :ref:`constraints <reference-form-option-constraints>` option allows you to
+attach :doc:`validation constraints </reference/constraints>` to any form field.
+However, doing that prevents the validation from being reused in other forms or
+other places where the mapped object is used.
+
+.. best-practice::
+
+    Do not define your validation constraints in the form but on the object the
+    form is mapped to.
+
+For example, to validate that the title of the post edited with a form is not
+blank, add the following in the ``Post`` object::
+
+    // src/Entity/Post.php
+
+    // ...
+    use Symfony\Component\Validator\Constraints as Assert;
+
+    class Post
+    {
+        /**
+         * @Assert\NotBlank()
+         */
+        public $title;
+    }
 
 Rendering the Form
 ------------------

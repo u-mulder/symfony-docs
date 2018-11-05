@@ -77,12 +77,12 @@ make your error management configurable::
     $dispatcher->addSubscriber(new HttpKernel\EventListener\ExceptionListener($errorHandler));
 
 ``ExceptionListener`` gives you a ``FlattenException`` instance instead of the
-thrown ``Exception`` instance to ease exception manipulation and display. It
-can take any valid controller as an exception handler, so you can create an
-ErrorController class instead of using a Closure::
+thrown ``Exception`` or ``Error`` instance to ease exception manipulation and
+display. It can take any valid controller as an exception handler, so you can
+create an ErrorController class instead of using a Closure::
 
     $listener = new HttpKernel\EventListener\ExceptionListener(
-        'Calendar\Controller\ErrorController::exceptionAction'
+        'Calendar\Controller\ErrorController::exception'
     );
     $dispatcher->addSubscriber($listener);
 
@@ -96,7 +96,7 @@ The error controller reads as follows::
 
     class ErrorController
     {
-        public function exceptionAction(FlattenException $exception)
+        public function exception(FlattenException $exception)
         {
             $msg = 'Something went wrong! ('.$exception->getMessage().')';
 
@@ -104,8 +104,8 @@ The error controller reads as follows::
         }
     }
 
-Voilà! Clean and customizable error management without efforts. And of course,
-if your controller throws an exception, HttpKernel will handle it nicely.
+Voilà! Clean and customizable error management without efforts. And
+if your ``ErrorController`` throws an exception, HttpKernel will handle it nicely.
 
 In chapter two, we talked about the ``Response::prepare()`` method, which
 ensures that a Response is compliant with the HTTP specification. It is
@@ -115,8 +115,7 @@ client; that's what the ``ResponseListener`` does::
     $dispatcher->addSubscriber(new HttpKernel\EventListener\ResponseListener('UTF-8'));
 
 This one was easy too! Let's take another one: do you want out of the box
-support for streamed responses? Just subscribe to
-``StreamedResponseListener``::
+support for streamed responses? Subscribe to ``StreamedResponseListener``::
 
     $dispatcher->addSubscriber(new HttpKernel\EventListener\StreamedResponseListener());
 
@@ -134,7 +133,7 @@ instead of a full Response object::
 
     class LeapYearController
     {
-        public function indexAction(Request $request, $year)
+        public function index(Request $request, $year)
         {
             $leapYear = new LeapYear();
             if ($leapYear->isLeapYear($year)) {
@@ -197,7 +196,7 @@ Hopefully, you now have a better understanding of why the simple looking
 ``HttpKernelInterface`` is so powerful. Its default implementation,
 ``HttpKernel``, gives you access to a lot of cool features, ready to be used
 out of the box, with no efforts. And because HttpKernel is actually the code
-that powers the Symfony and Silex frameworks, you have the best of both
+that powers the Symfony framework, you have the best of both
 worlds: a custom framework, tailored to your needs, but based on a rock-solid
 and well maintained low-level architecture that has been proven to work for
 many websites; a code that has been audited for security issues and that has

@@ -175,15 +175,10 @@ event::
         public static function getSubscribedEvents()
         {
             return array(
-                SecurityEvents::INTERACTIVE_LOGIN => array(array('onInteractiveLogin', 15)),
+                SecurityEvents::INTERACTIVE_LOGIN => 'onInteractiveLogin',
             );
         }
     }
-
-If you're using the :ref:`default services.yaml configuration <service-container-services-load-example>`,
-you're done! Symfony will automatically know about the event subscriber will pass
-your the ``session`` service. Now, when you login, the user's locale will be set
-into the session.
 
 .. caution::
 

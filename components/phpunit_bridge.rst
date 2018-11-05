@@ -28,11 +28,18 @@ Installation
 
 .. code-block:: terminal
 
-    $ composer require --dev symfony/phpunit-bridge
+    $ composer require --dev "symfony/phpunit-bridge:*"
 
 Alternatively, you can clone the `<https://github.com/symfony/phpunit-bridge>`_ repository.
 
 .. include:: /components/require_autoload.rst.inc
+
+.. note::
+
+    The PHPUnit bridge is designed to work with all maintained versions of
+    Symfony components, even across different major versions of them. You should
+    always use its very latest stable major version to get the most accurate
+    deprecation report.
 
 If you plan to :ref:`write-assertions-about-deprecations` and use the regular
 PHPUnit script (not the modified PHPUnit script provided by Symfony), you have
@@ -55,6 +62,12 @@ to register a new `test listener`_ called ``SymfonyTestsListener``:
 Usage
 -----
 
+.. seealso::
+
+    This article explains how to use the PhpUnitBridge features as an independent
+    component in any PHP application. Read the :doc:`/testing` article to learn
+    about how to use it in Symfony applications.
+
 Once the component is installed, a ``simple-phpunit`` script is created in the
 ``vendor/`` directory to run tests. This script wraps the original PHPUnit binary
 to provide more features:
@@ -66,7 +79,23 @@ to provide more features:
 
 After running your PHPUnit tests, you will get a report similar to this one:
 
-.. image:: /_images/components/phpunit_bridge/report.png
+.. code-block:: terminal
+
+    $ ./vendor/bin/simple-phpunit
+      PHPUnit by Sebastian Bergmann.
+
+      Configuration read from <your-project>/phpunit.xml.dist
+      .................
+
+      Time: 1.77 seconds, Memory: 5.75Mb
+
+      OK (17 tests, 21 assertions)
+
+      Remaining deprecation notices (2)
+
+      getEntityManager is deprecated since Symfony 2.1. Use getManager instead: 2x
+        1x in DefaultControllerTest::testPublicUrls from App\Tests\Controller
+        1x in BlogControllerTest::testIndex from App\Tests\Controller
 
 The summary includes:
 
@@ -123,7 +152,7 @@ There are three ways to mark a test as legacy:
 .. note::
 
     If your data provider calls code that would usually trigger a deprecation,
-    you can prefix its name with ``provideLegacy`` or ``getLegacy`` to silent
+    you can prefix its name with ``provideLegacy`` or ``getLegacy`` to silence
     these deprecations. If your data provider does not execute deprecated
     code, it is not required to choose a special naming just because the
     test being fed by the data provider is marked as legacy.
@@ -197,6 +226,31 @@ related to deprecations.
 
 .. _write-assertions-about-deprecations:
 
+Deprecation Notices at Autoloading Time
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, the PHPUnit Bridge uses ``DebugClassLoader`` from the
+:doc:`Debug component </components/debug>` to throw deprecation notices at
+class autoloading time. This can be disabled with the ``debug-class-loader`` option.
+
+.. code-block:: xml
+
+    <!-- phpunit.xml.dist -->
+    <!-- ... -->
+    <listeners>
+        <listener class="Symfony\Bridge\PhpUnit\SymfonyTestsListener">
+            <arguments>
+                <array>
+                    <!-- set this option to 0 to disable the DebugClassLoader integration -->
+                    <element key="debug-class-loader"><integer>0</integer></element>
+                </array>
+            </arguments>
+        </listener>
+    </listeners>
+
+.. versionadded:: 4.2
+    The ``DebugClassLoader`` integration was introduced in Symfony 4.2.
+
 Write Assertions about Deprecations
 -----------------------------------
 
@@ -218,6 +272,24 @@ times (order matters)::
         @trigger_error('This "Foo" method is deprecated.', E_USER_DEPRECATED);
         @trigger_error('The second argument of the "Bar" method is deprecated.', E_USER_DEPRECATED);
     }
+
+Display the Full Stack Trace
+----------------------------
+
+By default, the PHPUnit Bridge displays only deprecation messages.
+To show the full stack trace related to a deprecation, set the value of ``SYMFONY_DEPRECATIONS_HELPER``
+to a regular expression matching the deprecation message.
+
+For example, if the following deprecation notice is thrown::
+
+    1x: Doctrine\Common\ClassLoader is deprecated.
+      1x in EntityTypeTest::setUp from Symfony\Bridge\Doctrine\Tests\Form\Type
+
+Running the following command will display the full stack trace:
+
+.. code-block:: terminal
+
+    $ SYMFONY_DEPRECATIONS_HELPER='/Doctrine\\Common\\ClassLoader is deprecated\./' ./vendor/bin/simple-phpunit
 
 Time-sensitive Tests
 --------------------
@@ -304,6 +376,48 @@ test::
     }
 
 And that's all!
+
+.. caution::
+
+    Time-based function mocking follows the `PHP namespace resolutions rules`_
+    so "fully qualified function calls" (e.g ``\time()``) cannot be mocked.
+
+The ``@group time-sensitive`` annotation is equivalent to calling
+``ClockMock::register(MyTest::class)``. If you want to mock a function used in a
+different class, do it explicitly using ``ClockMock::register(MyClass::class)``::
+
+    // the class that uses the time() function to be mocked
+    namespace App;
+
+    class MyClass
+    {
+        public function getTimeInHours()
+        {
+            return time() / 3600;
+        }
+    }
+
+    // the test that mocks the external time() function explicitly
+    namespace App\Tests;
+
+    use App\MyClass;
+    use PHPUnit\Framework\TestCase;
+
+    /**
+     * @group time-sensitive
+     */
+    class MyTest extends TestCase
+    {
+        public function testGetTimeInHours()
+        {
+            ClockMock::register(MyClass::class);
+
+            $my = new MyClass();
+            $result = $my->getTimeInHours();
+
+            $this->assertEquals(time() / 3600, $result);
+        }
+    }
 
 .. tip::
 
@@ -435,7 +549,8 @@ its ``bin/simple-phpunit`` command. It has the following features:
 
 * Does not embed ``symfony/yaml`` nor ``prophecy`` to prevent any conflicts with
   these dependencies;
-* Uses PHPUnit 4.8 when run with PHP <=5.5 and PHPUnit 5.3 when run with PHP >=5.6;
+* Uses PHPUnit 4.8 when run with PHP <=5.5, PHPUnit 5.7 when run with PHP >=5.6
+  and PHPUnit 6.5 when run with PHP >=7.2;
 * Collects and replays skipped tests when the ``SYMFONY_PHPUNIT_SKIPPED_TESTS``
   env var is defined: the env var should specify a file name that will be used for
   storing skipped tests on a first run, and replay them on the second run;
@@ -446,6 +561,8 @@ its ``bin/simple-phpunit`` command. It has the following features:
 The script writes the modified PHPUnit it builds in a directory that can be
 configured by the ``SYMFONY_PHPUNIT_DIR`` env var, or in the same directory as
 the ``simple-phpunit`` if it is not provided.
+
+It's also possible to set this env var in the ``phpunit.xml.dist`` file.
 
 If you have installed the bridge through Composer, you can run it by calling e.g.:
 
@@ -458,10 +575,14 @@ If you have installed the bridge through Composer, you can run it by calling e.g
     Set the ``SYMFONY_PHPUNIT_VERSION`` env var to e.g. ``5.5`` to change the
     base version of PHPUnit to ``5.5`` instead of the default ``5.3``.
 
+    It's also possible to set this env var in the ``phpunit.xml.dist`` file.
+
 .. tip::
 
     If you still need to use ``prophecy`` (but not ``symfony/yaml``),
     then set the ``SYMFONY_PHPUNIT_REMOVE`` env var to ``symfony/yaml``.
+
+    It's also possible to set this env var in the ``phpunit.xml.dist`` file.
 
 Code coverage listener
 ----------------------
@@ -579,3 +700,4 @@ not find the SUT:
 .. _`Travis CI`: https://travis-ci.org/
 .. _`test listener`: https://phpunit.de/manual/current/en/appendixes.configuration.html#appendixes.configuration.test-listeners
 .. _`@covers`: https://phpunit.de/manual/current/en/appendixes.annotations.html#appendixes.annotations.covers
+.. _`PHP namespace resolutions rules`: https://php.net/manual/en/language.namespaces.rules.php

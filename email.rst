@@ -17,7 +17,7 @@ install the Swift Mailer based mailer before using it:
 
 .. code-block:: terminal
 
-    $ composer require mailer
+    $ composer require symfony/swiftmailer-bundle
 
 If your application doesn't use Symfony Flex, follow the installation
 instructions on `SwiftMailerBundle`_.
@@ -37,7 +37,9 @@ environment variable in the ``.env`` file:
     # use this to disable email delivery
     MAILER_URL=null://localhost
 
-    # use this to configure a traditional SMTP server
+    # use this to configure a traditional SMTP server (make sure to URL-encode the
+    # values of the username and password if they contain non-alphanumeric characters
+    # such as '+', '@', ':' and '*', which are reserved in URLs)
     MAILER_URL=smtp://localhost:25?encryption=ssl&auth_mode=login&username=&password=
 
 Refer to the :doc:`SwiftMailer configuration reference </reference/configuration/swiftmailer>`
@@ -51,7 +53,7 @@ The Swift Mailer library works by creating, configuring and then sending
 of the message and is accessible via the ``Swift_Mailer`` service. Overall,
 sending an email is pretty straightforward::
 
-    public function indexAction($name, \Swift_Mailer $mailer)
+    public function index($name, \Swift_Mailer $mailer)
     {
         $message = (new \Swift_Message('Hello Email'))
             ->setFrom('send@example.com')
@@ -136,8 +138,8 @@ Using Cloud Services to Send Emails
 -----------------------------------
 
 Cloud mailing services are a popular option for companies that don't want to set
-up and maintain their own reliable mail servers. In Symfony apps, using these
-services is as simple as updating the value of ``MAILER_URL`` in the ``.env``
+up and maintain their own reliable mail servers. To use these services in a
+Symfony app, update the value of ``MAILER_URL`` in the ``.env``
 file. For example, for `Amazon SES`_ (Simple Email Service):
 
 .. code-block:: bash
@@ -161,7 +163,7 @@ Learn more
 
 .. _`Swift Mailer`: http://swiftmailer.org/
 .. _`SwiftMailerBundle`: https://github.com/symfony/swiftmailer-bundle
-.. _`Creating Messages`: http://swiftmailer.org/docs/messages.html
+.. _`Creating Messages`: https://swiftmailer.symfony.com/docs/messages.html
 .. _`Mandrill`: https://mandrill.com/
 .. _`SendGrid`: https://sendgrid.com/
 .. _`Amazon SES`: http://aws.amazon.com/ses/

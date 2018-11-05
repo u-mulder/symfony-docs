@@ -121,7 +121,7 @@ Create a new file to host the dependency injection container configuration::
         ->setArguments(array('UTF-8'))
     ;
     $containerBuilder->register('listener.exception', HttpKernel\EventListener\ExceptionListener::class)
-        ->setArguments(array('Calendar\Controller\ErrorController::exceptionAction'))
+        ->setArguments(array('Calendar\Controller\ErrorController::exception'))
     ;
     $containerBuilder->register('dispatcher', EventDispatcher\EventDispatcher::class)
         ->addMethodCall('addSubscriber', array(new Reference('listener.router')))
@@ -250,11 +250,7 @@ in great details, but hopefully it gives you enough information to get started
 on your own and to better understand how the Symfony framework works
 internally.
 
-If you want to learn more, read the source code of the `Silex`_
-micro-framework, and especially its `Application`_ class.
-
 Have fun!
 
 .. _`Pimple`: https://github.com/silexphp/Pimple
-.. _`Silex`: http://silex.sensiolabs.org/
 .. _`Application`: https://github.com/silexphp/Silex/blob/master/src/Silex/Application.php

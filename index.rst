@@ -41,6 +41,7 @@ Topics
     frontend
     http_cache
     logging
+    messenger
     performance
     profiler
     routing
@@ -52,6 +53,7 @@ Topics
     testing
     translation
     validation
+    weblink
     workflow
 
 Best Practices

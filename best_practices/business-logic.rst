@@ -38,7 +38,7 @@ Services: Naming and Configuration
 by Symfony's Service Container to manage services with minimal configuration. It
 reads the type-hints on your constructor (or other methods) and automatically
 passes the correct services to each method. It can also add
-:doc:`service tags </service_container/tags>` to the services needed them, such
+:doc:`service tags </service_container/tags>` to the services needing them, such
 as Twig extensions, event subscribers, etc.
 
 The blog application needs a utility that can transform a post title (e.g.
@@ -96,11 +96,13 @@ all services are private by default.
 Service Format: YAML
 --------------------
 
-In the previous section, YAML was used to define the service.
+If you use the :ref:`default services.yaml configuration <service-container-services-load-example>`,
+most services will be configured automatically. However, in some edge cases
+you'll need to configure services (or parts of them) manually.
 
 .. best-practice::
 
-    Use the YAML format to define your own services.
+    Use the YAML format to configure your own services.
 
 This is controversial, and in our experience, YAML and XML usage is evenly
 distributed among developers, with a slight preference towards YAML.
@@ -108,7 +110,7 @@ Both formats have the same performance, so this is ultimately a matter of
 personal taste.
 
 We recommend YAML because it's friendly to newcomers and concise. You can
-of course use whatever format you like.
+use any of the other formats if you prefer another format.
 
 Using a Persistence Layer
 -------------------------

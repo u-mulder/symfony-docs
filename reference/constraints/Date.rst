@@ -1,9 +1,8 @@
 Date
 ====
 
-Validates that a value is a valid date, meaning either a ``DateTime`` object
-or a string (or an object that can be cast into a string) that follows a
-valid YYYY-MM-DD format.
+Validates that a value is a valid date, meaning a string (or an object that can
+be cast into a string) that follows a valid ``YYYY-MM-DD`` format.
 
 +----------------+--------------------------------------------------------------------+
 | Applies to     | :ref:`property or method <validation-property-target>`             |
@@ -32,6 +31,7 @@ Basic Usage
         {
             /**
              * @Assert\Date()
+             * @var string A "Y-m-d" formatted value
              */
              protected $birthday;
         }
@@ -69,11 +69,18 @@ Basic Usage
 
         class Author
         {
+           /**
+            * @var string A "Y-m-d" formatted value
+            */
+            protected $birthday;
+
             public static function loadValidatorMetadata(ClassMetadata $metadata)
             {
                 $metadata->addPropertyConstraint('birthday', new Assert\Date());
             }
         }
+
+.. include:: /reference/constraints/_empty-values-are-valid.rst.inc
 
 Options
 -------
@@ -84,5 +91,13 @@ message
 **type**: ``string`` **default**: ``This value is not a valid date.``
 
 This message is shown if the underlying data is not a valid date.
+
+You can use the following parameters in this message:
+
++------------------+------------------------------------------------+
+| Parameter        | Description                                    |
++==================+================================================+
+| ``{{ value }}``  | The current (invalid) value                    |
++------------------+------------------------------------------------+
 
 .. include:: /reference/constraints/_payload-option.rst.inc

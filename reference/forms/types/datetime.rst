@@ -17,6 +17,7 @@ the data can be a ``DateTime`` object, a string, a timestamp or an array.
 +----------------------+-----------------------------------------------------------------------------+
 | Options              | - `choice_translation_domain`_                                              |
 |                      | - `date_format`_                                                            |
+|                      | - `date_label`_                                                             |
 |                      | - `date_widget`_                                                            |
 |                      | - `days`_                                                                   |
 |                      | - `placeholder`_                                                            |
@@ -28,6 +29,7 @@ the data can be a ``DateTime`` object, a string, a timestamp or an array.
 |                      | - `model_timezone`_                                                         |
 |                      | - `months`_                                                                 |
 |                      | - `seconds`_                                                                |
+|                      | - `time_label`_                                                             |
 |                      | - `time_widget`_                                                            |
 |                      | - `view_timezone`_                                                          |
 |                      | - `widget`_                                                                 |
@@ -42,6 +44,8 @@ the data can be a ``DateTime`` object, a string, a timestamp or an array.
 +----------------------+-----------------------------------------------------------------------------+
 | Inherited            | - `data`_                                                                   |
 | options              | - `disabled`_                                                               |
+|                      | - `help`_                                                                   |
+|                      | - `help_attr`_                                                              |
 |                      | - `inherit_data`_                                                           |
 |                      | - `invalid_message`_                                                        |
 |                      | - `invalid_message_parameters`_                                             |
@@ -65,6 +69,23 @@ date_format
 Defines the ``format`` option that will be passed down to the date field.
 See the :ref:`DateType's format option <reference-forms-type-date-format>`
 for more details.
+
+date_label
+~~~~~~~~~~
+
+**type**: ``string`` | ``null`` **default**: The label is "guessed" from the field name
+
+.. versionadded:: 4.2
+    The ``date_label`` option was introduced in Symfony 4.2.
+
+Sets the label that will be used when rendering the date widget. Setting it to
+``false`` will suppress the label::
+
+    use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+
+    $builder->add('startDateTime', DateTimeType::class, array(
+        'date_label' => 'Starts On',
+    ));
 
 date_widget
 ~~~~~~~~~~~
@@ -107,9 +128,10 @@ format
 
 If the ``widget`` option is set to ``single_text``, this option specifies
 the format of the input, i.e. how Symfony will interpret the given input
-as a datetime string. It defaults to the `RFC 3339`_ format which is used
-by the HTML5 ``datetime`` field. Keeping the default value will cause the
-field to be rendered as an ``input`` field with ``type="datetime"``.
+as a datetime string. It defaults to the `datetime local`_ format which is
+used by the HTML5 ``datetime-local`` field. Keeping the default value will
+cause the field to be rendered as an ``input`` field with ``type="datetime-local"``.
+For more information on valid formats, see `Date/Time Format Syntax`_.
 
 .. include:: /reference/forms/types/options/hours.rst.inc
 
@@ -141,6 +163,23 @@ this format.
 .. include:: /reference/forms/types/options/months.rst.inc
 
 .. include:: /reference/forms/types/options/seconds.rst.inc
+
+time_label
+~~~~~~~~~~
+
+**type**: ``string`` | ``null`` **default**: The label is "guessed" from the field name
+
+.. versionadded:: 4.2
+    The ``time_label`` option was introduced in Symfony 4.2.
+
+Sets the label that will be used when rendering the time widget. Setting it to
+``false`` will suppress the label::
+
+    use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+
+    $builder->add('startDateTime', DateTimeType::class, array(
+        'time_label' => 'Starts On',
+    ));
 
 time_widget
 ~~~~~~~~~~~
@@ -194,6 +233,10 @@ These options inherit from the :doc:`FormType </reference/forms/types/form>`:
 
 .. include:: /reference/forms/types/options/disabled.rst.inc
 
+.. include:: /reference/forms/types/options/help.rst.inc
+
+.. include:: /reference/forms/types/options/help_attr.rst.inc
+
 .. include:: /reference/forms/types/options/inherit_data.rst.inc
 
 .. include:: /reference/forms/types/options/invalid_message.rst.inc
@@ -214,4 +257,5 @@ Field Variables
 |          |            | contains the input type to use (``datetime``, ``date`` or ``time``). |
 +----------+------------+----------------------------------------------------------------------+
 
-.. _`RFC 3339`: https://tools.ietf.org/html/rfc3339
+.. _`datetime local`: http://w3c.github.io/html-reference/datatypes.html#form.data.datetime-local
+.. _`Date/Time Format Syntax`: http://userguide.icu-project.org/formatparse/datetime#TOC-Date-Time-Format-Syntax

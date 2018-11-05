@@ -1,8 +1,11 @@
 Profiler
 ========
 
-Symfony provides a powerful profiler to get detailed information about the
-execution of any request.
+The profiler is a powerful **development tool** that gives detailed information
+about the execution of any request.
+
+**Never** enable the profiler in production environments as it will lead to
+major security vulnerabilities in your project.
 
 Installation
 ------------
@@ -12,7 +15,7 @@ install the profiler before using it:
 
 .. code-block:: terminal
 
-    $ composer require profiler --dev
+    $ composer require --dev symfony/profiler-pack
 
 .. toctree::
     :maxdepth: 1
@@ -20,4 +23,4 @@ install the profiler before using it:
     profiler/data_collector
     profiler/profiling_data
     profiler/matchers
-    profiler/storage
+    profiler/wdt_follow_ajax

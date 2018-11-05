@@ -11,7 +11,7 @@ exception in your code.
 
 In the :doc:`development environment </configuration/environments>`,
 Symfony catches all the exceptions and displays a special **exception page**
-with lots of debug information to help you quickly discover the root problem:
+with lots of debug information to help you discover the root problem:
 
 .. image:: /_images/controller/error_pages/exceptions-in-dev-environment.png
    :alt: A typical exception page in the development environment
@@ -60,16 +60,16 @@ logic to determine the template filename:
    a generic template for the given format (like ``error.json.twig`` or
    ``error.xml.twig``);
 
-#. If none of the previous template exist, fall back to the generic HTML template
+#. If none of the previous templates exist, fall back to the generic HTML template
    (``error.html.twig``).
 
 .. _overriding-or-adding-templates:
 
-To override these templates, simply rely on the standard Symfony method for
-:doc:`overriding templates that live inside a bundle </templating/overriding>`:
+To override these templates, rely on the standard Symfony method for
+:ref:`overriding templates that live inside a bundle <override-templates>` and
 put them in the ``templates/bundles/TwigBundle/Exception/`` directory.
 
-A typical project that returns HTML and JSON pages, might look like this:
+A typical project that returns HTML and JSON pages might look like this:
 
 .. code-block:: text
 
@@ -121,6 +121,13 @@ store the HTTP status code and message respectively.
     in the same way as error pages. Create a new ``exception.html.twig`` template
     for the standard HTML exception page or ``exception.json.twig`` for the JSON
     exception page.
+
+Security & 404 Pages
+--------------------
+
+Due to the order of how routing and security are loaded, security information will
+*not* be available on your 404 pages. This means that it will appear as if your
+user is logged out on the 404 page (it will work while testing, but not on production).
 
 .. _testing-error-pages:
 
@@ -191,7 +198,7 @@ If you need a little more flexibility beyond just overriding the template,
 then you can change the controller that renders the error page. For example,
 you might need to pass some additional variables into your template.
 
-To do this, simply create a new controller anywhere in your application and set
+To do this, create a new controller anywhere in your application and set
 the :ref:`twig.exception_controller <config-twig-exception-controller>`
 configuration option to point to it:
 
@@ -242,8 +249,8 @@ will be passed two parameters:
     A :class:`\\Symfony\\Component\\HttpKernel\\Log\\DebugLoggerInterface`
     instance which may be ``null`` in some circumstances.
 
-Instead of creating a new exception controller from scratch you can, of course,
-also extend the default :class:`Symfony\\Bundle\\TwigBundle\\Controller\\ExceptionController`.
+Instead of creating a new exception controller from scratch you can also extend
+the default :class:`Symfony\\Bundle\\TwigBundle\\Controller\\ExceptionController`.
 In that case, you might want to override one or both of the ``showAction()`` and
 ``findTemplate()`` methods. The latter one locates the template to be used.
 

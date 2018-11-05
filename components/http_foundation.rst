@@ -27,6 +27,13 @@ Alternatively, you can clone the `<https://github.com/symfony/http-foundation>`_
 
 .. include:: /components/require_autoload.rst.inc
 
+.. seealso::
+
+    This article explains how to use the HttpFoundation features as an
+    independent component in any PHP application. In Symfony applications
+    everything is already configured and ready to use. Read the :doc:`/controller`
+    article to learn about how to use these features when creating controllers.
+
 .. _component-http-foundation-request:
 
 Request
@@ -235,14 +242,68 @@ the
 method tells you if the request contains a session which was started in one of
 the previous requests.
 
+.. versionadded:: 4.1
+    Using :method:`Symfony\\Component\\HttpFoundation\\Request::getSession()`
+    when no session has been set was deprecated in Symfony 4.1. It will throw
+    an exception in Symfony 5.0 when the session is ``null``. Check for an existing session
+    first by calling :method:`Symfony\\Component\\HttpFoundation\\Request::hasSession()`.
+
+Processing HTTP Headers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 4.1
+    The ``HeaderUtils`` class was introduced in Symfony 4.1.
+
+Processing HTTP headers is not a trivial task because of the escaping and white
+space handling of their contents. Symfony provides a
+:class:`Symfony\\Component\\HttpFoundation\\HeaderUtils` class that abstracts
+this complexity and defines some methods for the most common tasks::
+
+    use Symfony\Component\HttpFoundation\HeaderUtils;
+
+    // Splits an HTTP header by one or more separators
+    HeaderUtils::split('da, en-gb;q=0.8', ',;');
+    // => array(array('da'), array('en-gb','q=0.8'))
+
+    // Combines an array of arrays into one associative array
+    HeaderUtils::combine(array(array('foo', 'abc'), array('bar')));
+    // => array('foo' => 'abc', 'bar' => true)
+
+    // Joins an associative array into a string for use in an HTTP header
+    HeaderUtils::toString(array('foo' => 'abc', 'bar' => true, 'baz' => 'a b c'), ',');
+    // => 'foo=abc, bar, baz="a b c"'
+
+    // Encodes a string as a quoted string, if necessary
+    HeaderUtils::quote('foo "bar"');
+    // => '"foo \"bar\""'
+
+    // Decodes a quoted string
+    HeaderUtils::unquote('"foo \"bar\""');
+    // => 'foo "bar"'
+
 Accessing ``Accept-*`` Headers Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can easily access basic data extracted from ``Accept-*`` headers
+You can access basic data extracted from ``Accept-*`` headers
 by using the following methods:
 
 :method:`Symfony\\Component\\HttpFoundation\\Request::getAcceptableContentTypes`
     Returns the list of accepted content types ordered by descending quality.
+
+:method:`Symfony\\Component\\HttpFoundation\\Request::getAcceptableFormats`
+    Returns the list of accepted client formats associated with the request.
+
+Note that
+:method:`Symfony\\Component\\HttpFoundation\\Request::getAcceptableFormats`
+will use the data from
+:method:`Symfony\\Component\\HttpFoundation\\Request::getAcceptableContentTypes`
+and return the client acceptable formats::
+
+    $request->getAcceptableContentTypes();
+    // returns ['text/html', 'application/xhtml+xml', 'application/xml', '*/*']
+
+    $request->getAcceptableFormats();
+    // returns ['html', 'xml']
 
 :method:`Symfony\\Component\\HttpFoundation\\Request::getLanguages`
     Returns the list of accepted languages ordered by descending quality.
@@ -369,7 +430,7 @@ incompatibility with the HTTP specification (e.g. a wrong ``Content-Type`` heade
 
     $response->prepare($request);
 
-Sending the response to the client is then as simple as calling
+Sending the response to the client is done by calling the method
 :method:`Symfony\\Component\\HttpFoundation\\Response::send`::
 
     $response->send();
@@ -487,7 +548,7 @@ represented by a PHP callable instead of a string::
 
     Additionally, PHP isn't the only layer that can buffer output. Your web
     server might also buffer based on its configuration. Some servers, such as
-    Nginx, let you disable buffering at config level or adding a special HTTP
+    Nginx, let you disable buffering at the config level or by adding a special HTTP
     header in the response::
 
         // disables FastCGI buffering in Nginx only for this response
@@ -499,23 +560,27 @@ Serving Files
 ~~~~~~~~~~~~~
 
 When sending a file, you must add a ``Content-Disposition`` header to your
-response. While creating this header for basic file downloads is easy, using
-non-ASCII filenames is more involving. The
-:method:`Symfony\\Component\\HttpFoundation\\ResponseHeaderBag::makeDisposition`
+response. While creating this header for basic file downloads is straightforward,
+using non-ASCII filenames is more involving. The
+:method:`Symfony\\Component\\HttpFoundation\\HeaderUtils::makeDisposition`
 abstracts the hard work behind a simple API::
 
+    use Symfony\Component\HttpFoundation\HeaderUtils;
     use Symfony\Component\HttpFoundation\Response;
     use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
     $fileContent = ...; // the generated file content
     $response = new Response($fileContent);
 
-    $disposition = $response->headers->makeDisposition(
-        ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+    $disposition = HeaderUtils::makeDisposition(
+        HeaderUtils::DISPOSITION_ATTACHMENT,
         'foo.pdf'
     );
 
     $response->headers->set('Content-Disposition', $disposition);
+
+.. versionadded:: 4.2
+    The static ``HeaderUtils::makeDisposition()`` method was introduced in Symfony 4.2.
 
 Alternatively, if you are serving a static file, you can use a
 :class:`Symfony\\Component\\HttpFoundation\\BinaryFileResponse`::
@@ -647,7 +712,7 @@ Learn More
     /http_cache/*
 
 .. _Packagist: https://packagist.org/packages/symfony/http-foundation
-.. _Nginx: http://wiki.nginx.org/XSendfile
+.. _Nginx: https://www.nginx.com/resources/wiki/start/topics/examples/xsendfile/
 .. _Apache: https://tn123.org/mod_xsendfile/
 .. _`JSON Hijacking`: http://haacked.com/archive/2009/06/25/json-hijacking.aspx
 .. _OWASP guidelines: https://www.owasp.org/index.php/OWASP_AJAX_Security_Guidelines#Always_return_JSON_with_an_Object_on_the_outside

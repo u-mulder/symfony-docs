@@ -80,6 +80,8 @@ will contain a Business Identifier Code (BIC).
             }
         }
 
+.. include:: /reference/constraints/_empty-values-are-valid.rst.inc
+
 Available Options
 -----------------
 
@@ -89,6 +91,14 @@ message
 **type**: ``string`` **default**: ``This is not a valid Business Identifier Code (BIC).``
 
 The default message supplied when the value does not pass the BIC check.
+
+You can use the following parameters in this message:
+
++------------------+------------------------------------------------+
+| Parameter        | Description                                    |
++==================+================================================+
+| ``{{ value }}``  | The current (invalid) BIC value                |
++------------------+------------------------------------------------+
 
 .. include:: /reference/constraints/_payload-option.rst.inc
 

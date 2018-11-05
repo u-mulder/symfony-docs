@@ -10,15 +10,9 @@ is that dynamic content could break the HTML of the resulting page or allow
 a malicious user to perform a `Cross Site Scripting`_ (XSS) attack. Consider
 this classic example:
 
-.. configuration-block::
+.. code-block:: html+twig
 
-    .. code-block:: html+twig
-
-        Hello {{ name }}
-
-    .. code-block:: html+php
-
-        Hello <?php echo $name ?>
+    Hello {{ name }}
 
 Imagine the user enters the following code for their name:
 
@@ -82,7 +76,7 @@ use output escaping, use the special ``escape()`` view method:
 
 .. code-block:: html+php
 
-    Hello <?php echo $view->escape($name) ?>
+    Hello <?= $view->escape($name) ?>
 
 By default, the ``escape()`` method assumes that the variable is being rendered
 within an HTML context (and thus the variable is escaped to be safe for HTML).
@@ -91,7 +85,7 @@ in a JavaScript string, use the ``js`` context:
 
 .. code-block:: html+php
 
-    var myMsg = 'Hello <?php echo $view->escape($name, 'js') ?>';
+    var myMsg = 'Hello <?= $view->escape($name, 'js') ?>';
 
 .. _`Cross Site Scripting`: https://en.wikipedia.org/wiki/Cross-site_scripting
-.. _`Output Escaping`: http://twig.sensiolabs.org/doc/api.html#escaper-extension
+.. _`Output Escaping`: https://twig.symfony.com/doc/2.x/api.html#escaper-extension

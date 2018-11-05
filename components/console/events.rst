@@ -95,7 +95,7 @@ can wrap or change the exception or do anything useful before the exception is
 thrown by the application.
 
 Listeners receive a
-:class:`Symfony\\Component\\Console\\Event\\ConsoleExceptionEvent` event::
+:class:`Symfony\\Component\\Console\\Event\\ConsoleErrorEvent` event::
 
     use Symfony\Component\Console\Event\ConsoleErrorEvent;
     use Symfony\Component\Console\ConsoleEvents;
@@ -149,7 +149,7 @@ Listeners receive a
 .. tip::
 
     This event is also dispatched when an exception is thrown by the command.
-    It is then dispatched just after the ``ConsoleEvents::EXCEPTION`` event.
+    It is then dispatched just after the ``ConsoleEvents::ERROR`` event.
     The exit code received in this case is the exception code.
 
 .. _`reserved exit codes`: http://www.tldp.org/LDP/abs/html/exitcodes.html

@@ -18,15 +18,17 @@ form, you can use ``setAction()`` and ``setMethod()``:
         // src/Controller/DefaultController.php
         namespace App\Controller;
 
-        use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+        use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
         use Symfony\Component\Form\Extension\Core\Type\DateType;
         use Symfony\Component\Form\Extension\Core\Type\SubmitType;
         use Symfony\Component\Form\Extension\Core\Type\TextType;
 
-        class DefaultController extends Controller
+        class DefaultController extends AbstractController
         {
             public function new()
             {
+                // ...
+
                 $form = $this->createFormBuilder($task)
                     ->setAction($this->generateUrl('target_route'))
                     ->setMethod('GET')
@@ -79,9 +81,9 @@ options:
         namespace App\Controller;
 
         use App\Form\TaskType;
-        use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+        use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-        class DefaultController extends Controller
+        class DefaultController extends AbstractController
         {
             public function new()
             {
@@ -115,20 +117,10 @@ options:
 Finally, you can override the action and method in the template by passing them
 to the ``form()`` or the ``form_start()`` helper functions:
 
-.. configuration-block::
+.. code-block:: html+twig
 
-    .. code-block:: html+twig
-
-        {# templates/default/new.html.twig #}
-        {{ form_start(form, {'action': path('target_route'), 'method': 'GET'}) }}
-
-    .. code-block:: html+php
-
-        <!-- templates/default/new.html.php -->
-        <?php echo $view['form']->start($form, array(
-            'action' => $view['router']->path('target_route'),
-            'method' => 'GET',
-        )) ?>
+    {# templates/default/new.html.twig #}
+    {{ form_start(form, {'action': path('target_route'), 'method': 'GET'}) }}
 
 .. note::
 

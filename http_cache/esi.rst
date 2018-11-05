@@ -71,7 +71,7 @@ First, to use ESI, be sure to enable it in your application configuration:
 
         <!-- config/packages/framework.xml -->
         <?xml version="1.0" encoding="UTF-8" ?>
-        <container xmlns="http://symfony.com/schema/dic/symfony"
+        <container xmlns="http://symfony.com/schema/dic/services"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns:framework="http://symfony.com/schema/dic/symfony"
             xsi:schemaLocation="http://symfony.com/schema/dic/services
@@ -100,7 +100,7 @@ independent of the rest of the page::
     // src/Controller/DefaultController.php
 
     // ...
-    class DefaultController extends Controller
+    class DefaultController extends AbstractController
     {
         public function about()
         {
@@ -120,39 +120,15 @@ for more details).
 As the embedded content comes from another page (or controller for that
 matter), Symfony uses the standard ``render`` helper to configure ESI tags:
 
-.. configuration-block::
+.. code-block:: twig
 
-    .. code-block:: twig
+    {# templates/static/about.html.twig #}
 
-        {# templates/static/about.html.twig #}
+    {# you can use a controller reference #}
+    {{ render_esi(controller('App\\Controller\\NewsController::latest', { 'maxPerPage': 5 })) }}
 
-        {# you can use a controller reference #}
-        {{ render_esi(controller('App\Controller\NewsController::latest', { 'maxPerPage': 5 })) }}
-
-        {# ... or a URL #}
-        {{ render_esi(url('latest_news', { 'maxPerPage': 5 })) }}
-
-    .. code-block:: html+php
-
-        <!-- templates/static/about.html.php -->
-
-        <!-- you can use a controller reference -->
-        <?php echo $view['actions']->render(
-            new Symfony\Component\HttpKernel\Controller\ControllerReference(
-                'App\Controller\NewsController::latest',
-                array('maxPerPage' => 5)
-            ),
-            array('strategy' => 'esi')
-        ) ?>
-
-        <!-- ... or a URL -->
-        <?php echo $view['actions']->render(
-            $view['router']->path(
-                'latest_news',
-                array('maxPerPage' => 5)
-            ),
-            array('strategy' => 'esi')
-        ) ?>
+    {# ... or a URL #}
+    {{ render_esi(url('latest_news', { 'maxPerPage': 5 })) }}
 
 By using the ``esi`` renderer (via the ``render_esi()`` Twig function), you
 tell Symfony that the action should be rendered as an ESI tag. You might be
@@ -189,7 +165,7 @@ of the master page::
     namespace App\Controller;
 
     // ...
-    class NewsController extends Controller
+    class NewsController extends AbstractController
     {
         public function latest($maxPerPage)
         {

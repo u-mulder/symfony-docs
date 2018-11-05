@@ -55,7 +55,7 @@ First, run this command to install the translator before using it:
 
 .. code-block:: terminal
 
-    $ composer require translator
+    $ composer require symfony/translation
 
 Configuration
 -------------
@@ -177,7 +177,7 @@ the message inside your :ref:`templates <translation-tags>`.
 The Translation Process
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-To actually translate the message, Symfony uses a simple process:
+To actually translate the message, Symfony uses the following process:
 
 * The ``locale`` of the current user, which is stored on the request is determined;
 
@@ -335,9 +335,9 @@ The translator service is accessible in PHP templates through the
 
 .. code-block:: html+php
 
-    <?php echo $view['translator']->trans('Symfony is great') ?>
+    <?= $view['translator']->trans('Symfony is great') ?>
 
-    <?php echo $view['translator']->transChoice(
+    <?= $view['translator']->transChoice(
         '{0} There are no apples|{1} There is one apple|]1,Inf[ There are %count% apples',
         10,
         array('%count%' => 10)
@@ -377,11 +377,16 @@ Translation Resource/File Names and Locations
 
 Symfony looks for message files (i.e. translations) in the following default locations:
 
-* the ``translations/`` directory;
+* the ``translations/`` directory (at the root of the project);
 
 * the ``src/Resources/<bundle name>/translations/`` directory;
 
 * the ``Resources/translations/`` directory inside of any bundle.
+
+.. versionadded:: 4.2
+    Using the ``src/Resources/<bundle name>/translations/`` directory to store
+    translations was deprecated in Symfony 4.2. Use instead the directory
+    defined in the ``default_path`` option (which is ``translations/`` by default).
 
 The locations are listed here with the highest priority first. That is, you can
 override the translation messages of a bundle in any of the top two directories.
@@ -525,8 +530,7 @@ Summary
 -------
 
 With the Symfony Translation component, creating an internationalized application
-no longer needs to be a painful process and boils down to just a few basic
-steps:
+no longer needs to be a painful process and boils down to these steps:
 
 * Abstract messages in your application by wrapping each in either the
   :method:`Symfony\\Component\\Translation\\Translator::trans` or
